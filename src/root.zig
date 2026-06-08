@@ -1,14 +1,7 @@
 //! By convention, root.zig is the root source file when making a package.
 const std = @import("std");
 const native_endian = @import("builtin").target.cpu.arch.endian();
-const Io = std.Io;
-
-/// This is a documentation comment to explain the `printAnotherMessage` function below.
-///
-/// Accepting an `Io.Writer` instance is a handy way to write reusable code.
-pub fn printAnotherMessage(writer: *Io.Writer) Io.Writer.Error!void {
-    try writer.print("Run `zig build test` to run the tests.\n", .{});
-}
+const assert = std.debug.assert;
 
 const DecodeError = error {
     MalformedHeader,
@@ -39,35 +32,28 @@ const FileData = struct {
     profile_version: u16,
     payload: []const u8,
 
-    pub fn from_bytes(buffer: []const u8) !FileData {
+    pub fn from_reader(reader: *std.Io.Reader) !FileData {
         const header_len: usize = 12;
         const crc_len: usize = 2;
-        if (buffer.len < header_len + crc_len) {
-            return error.MalformedHeader;
-        }
+        var buffer = try reader.takeArray(header_len + crc_len);
 
-        // The protocol includes this field for the sake of flexibility, but 
+        // Only support the 14-byte flavor of the header for now.
         if (buffer[0] != header_len + crc_len) {
             return error.MalformedHeader;
         }
 
-        var actual_crc: u16 = 0;
+        var crc: u16 = 0;
         for (buffer[0..12]) |byte| {
-            actual_crc = update_crc(actual_crc, byte);
+            crc = update_crc(crc, byte);
         }
 
-        const expected_crc: *const [1]u16 = @alignCast(@ptrCast(buffer[header_len..header_len+crc_len]));
-        switch (native_endian) {
-            .big => {
-                if (@byteSwap(expected_crc[0]) != actual_crc) {
-                    return error.CrcMismatch;
-                }
-            },
-            .little => {
-                if (expected_crc[0] != actual_crc) {
-                    return error.CrcMismatch;
-                }
-            },
+        const header_crc_arr: *const [1]u16 = @alignCast(@ptrCast(buffer[header_len..header_len+crc_len]));
+        const expected_crc = switch (native_endian) {
+            .big => @byteSwap(header_crc_arr[0]),
+            .little => header_crc_arr[0],
+        };
+        if (expected_crc != crc and expected_crc != 0) {
+            return error.HeaderCrcMismatch;
         }
 
         const data_len_ptr: *const [1]u32 = @alignCast(@ptrCast(buffer[4..7]));
@@ -91,5 +77,6 @@ const FileData = struct {
 
 test "header length" {
     const header = [_]u8{0x0e, 0x10, 0xd0, 0x52, 0xe1, 0x18, 0x04, 0x00, 0x2e, 0x46, 0x49, 0x54, 0xd4, 0x4e,};
-    try std.testing.expectEqual(error.TruncatedPayload, FileData.from_bytes(header[0..14]));
+    var reader = std.Io.Reader.fixed(&header);
+    try std.testing.expectEqual(error.TruncatedPayload, FileData.from_reader(&reader));
 }
