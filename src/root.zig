@@ -27,12 +27,13 @@ fn update_crc(crc: u16, byte: u8) u16 {
    return ret;
 }
 
-const FileData = struct {
+const Decoder = struct {
     protocol_version: u8,
     profile_version: u16,
-    payload: []const u8,
+    remaining_bytes: usize,
+    reader: *std.Io.Reader,
 
-    pub fn from_reader(reader: *std.Io.Reader) !FileData {
+    pub fn from_reader(reader: *std.Io.Reader) !Decoder {
         const header_len: usize = 12;
         const crc_len: usize = 2;
         var buffer = try reader.takeArray(header_len + crc_len);
@@ -47,30 +48,32 @@ const FileData = struct {
             crc = update_crc(crc, byte);
         }
 
-        const header_crc_arr: *const [1]u16 = @alignCast(@ptrCast(buffer[header_len..header_len+crc_len]));
+        const header_crc_ptr: *const u16 = @alignCast(@ptrCast(buffer[header_len..header_len+crc_len]));
         const expected_crc = switch (native_endian) {
-            .big => @byteSwap(header_crc_arr[0]),
-            .little => header_crc_arr[0],
+            .big => @byteSwap(header_crc_ptr.*),
+            .little => header_crc_ptr.*,
         };
         if (expected_crc != crc and expected_crc != 0) {
             return error.HeaderCrcMismatch;
         }
 
-        const data_len_ptr: *const [1]u32 = @alignCast(@ptrCast(buffer[4..7]));
-        const data_len: usize = switch (native_endian) {
-            .big => @byteSwap(data_len_ptr[0]),
-            .little => data_len_ptr[0],
+        const profile_version_ptr: *const u16 = @alignCast(@ptrCast(buffer[2..4]));
+        const profile_version = switch (native_endian) {
+            .big => @byteSwap(profile_version_ptr.*),
+            .little => profile_version_ptr.*,
         };
 
-        if (buffer.len - header_len - crc_len < data_len)
-        {
-            return error.TruncatedPayload;
-        }
+        const data_len_ptr: *const u32 = @alignCast(@ptrCast(buffer[4..7]));
+        const data_len: usize = switch (native_endian) {
+            .big => @byteSwap(data_len_ptr.*),
+            .little => data_len_ptr.*,
+        };
 
-        return FileData{
+        return Decoder{
             .protocol_version=buffer[1],
-            .profile_version=123, // XXX
-            .payload=buffer[header_len..data_len],
+            .profile_version=profile_version,
+            .remaining_bytes=data_len,
+            .reader=reader,
         };
     }
 };
@@ -78,5 +81,6 @@ const FileData = struct {
 test "header length" {
     const header = [_]u8{0x0e, 0x10, 0xd0, 0x52, 0xe1, 0x18, 0x04, 0x00, 0x2e, 0x46, 0x49, 0x54, 0xd4, 0x4e,};
     var reader = std.Io.Reader.fixed(&header);
-    try std.testing.expectEqual(error.TruncatedPayload, FileData.from_reader(&reader));
+    const decoder = try Decoder.from_reader(&reader);
+    try std.testing.expectEqual(268513, decoder.remaining_bytes);
 }
