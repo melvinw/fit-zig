@@ -9,6 +9,7 @@ const DecodeError = error{
     TruncatedPayload,
     NotImplemented,
     InvalidField,
+    EndOfPayload,
 };
 
 const RecordHeaderType = enum(u1) {
@@ -200,39 +201,21 @@ const Decoder = struct {
         const header_len: usize = 12;
         const crc_len: usize = 2;
         var buffer = try reader.takeArray(header_len + crc_len);
-
-        // Only support the 14-byte flavor of the header for now.
         if (buffer[0] != header_len + crc_len) {
+            // Only support the 14-byte flavor of the header for now.
             return error.MalformedHeader;
         }
 
         const crc: u16 = compute_crc(buffer[0..12]);
-
-        const header_crc_ptr: *const u16 = @ptrCast(@alignCast(buffer[header_len .. header_len + crc_len]));
-        const expected_crc = switch (native_endian) {
-            .big => @byteSwap(header_crc_ptr.*),
-            .little => header_crc_ptr.*,
-        };
+        const expected_crc = std.mem.readPackedInt(u16, buffer, 96, .little);
         if (expected_crc != crc and expected_crc != 0) {
             return error.HeaderCrcMismatch;
         }
 
-        const profile_version_ptr: *const u16 = @ptrCast(@alignCast(buffer[2..4]));
-        const profile_version = switch (native_endian) {
-            .big => @byteSwap(profile_version_ptr.*),
-            .little => profile_version_ptr.*,
-        };
-
-        const data_len_ptr: *const u32 = @ptrCast(@alignCast(buffer[4..7]));
-        const data_len: usize = switch (native_endian) {
-            .big => @byteSwap(data_len_ptr.*),
-            .little => data_len_ptr.*,
-        };
-
         return Decoder{
             .protocol_version = buffer[1],
-            .profile_version = profile_version,
-            .remaining_bytes = data_len,
+            .profile_version = std.mem.readPackedInt(u16, buffer, 8, .little),
+            .remaining_bytes = std.mem.readPackedInt(u32, buffer, 32, .little),
             .reader = reader,
             .allocator = allocator,
         };
@@ -240,8 +223,7 @@ const Decoder = struct {
 
     fn readRecord(self: *Decoder) !?Message {
         if (self.*.remaining_bytes == 0) {
-            // XXX: end of stream?
-            return null;
+            return error.EndOfPayload;
         }
 
         const RecordHeader = packed struct(u8) {
@@ -251,10 +233,11 @@ const Decoder = struct {
             message_type: MessageType,
             header_type: RecordHeaderType,
         };
-        const record_header = try self.*.reader.takeStructPointer(RecordHeader);
-        if (record_header.*.header_type != RecordHeaderType.normal) {
+        const record_header = try self.*.reader.takeStruct(RecordHeader, .little);
+        if (record_header.header_type != RecordHeaderType.normal) {
             return error.NotImplemented;
         }
+        self.remaining_bytes -= 1;
 
         const MessageByteOrder = enum(u8) {
             little_endian = 0,
@@ -266,13 +249,8 @@ const Decoder = struct {
             global_id: u16,
             num_fields: u8,
         };
-        switch (record_header.*.message_type) {
+        switch (record_header.message_type) {
             MessageType.definition => {
-                // XXX can't use takeStructPtr because DefintionHeader gets
-                // padded to 8 bytes. To avoid a copy here we could just read
-                // a slice and do a pointer/align cast ourselves, but I'd like
-                // to do something cleaner. So, just use takeStruct() for now
-                // until I can pause to think of what that might be.
                 const header = try self.*.reader.takeStruct(DefinitionHeader, .little);
                 var fields = try std.ArrayList(FieldDefinition).initCapacity(self.*.allocator, header.num_fields);
                 for (0..header.num_fields) |_| {
@@ -281,8 +259,8 @@ const Decoder = struct {
                     field.*.size = try self.*.reader.takeByte();
                     field.*.type = @enumFromInt(try self.*.reader.takeByte() & ~@as(u8, 0b1000_0000));
                 }
-                self.*.message_definitions[record_header.*.local_message_id] = MessageDefinition{
-                    .local_id = record_header.*.local_message_id,
+                self.*.message_definitions[record_header.local_message_id] = MessageDefinition{
+                    .local_id = record_header.local_message_id,
                     .global_id = header.global_id,
                     .byte_order = switch (header.byte_order) {
                         MessageByteOrder.little_endian => .little,
@@ -290,22 +268,23 @@ const Decoder = struct {
                     },
                     .fields = fields,
                 };
-                if (record_header.*.has_developer_fields) {
+                if (record_header.has_developer_fields) {
                     const num_dev_fields = try self.*.reader.takeByte();
                     if (num_dev_fields != 0) {
                         return error.NotImplemented;
                     }
                 }
-                // 3 bytes per message field + definition header fields (6 bytes) + record header (1 byte)
-                self.*.remaining_bytes -= header.num_fields * 3 + 7;
+                // 3 bytes per message field + definition header fields (6 bytes)
+                self.*.remaining_bytes -= header.num_fields * 3 + 6;
             },
             MessageType.data => {
-                const message_def = self.*.message_definitions[record_header.*.local_message_id].?;
+                const message_def = self.*.message_definitions[record_header.local_message_id].?;
                 var fields = try std.ArrayList(FieldData).initCapacity(self.*.allocator, message_def.fields.items.len);
                 for (message_def.fields.items) |field_def| {
                     const field = try fields.addOneBounded();
                     field.*.id = field_def.id;
                     field.*.raw_value = try FieldValue.from_slice(field_def.type, try self.*.reader.take(field_def.size), message_def.byte_order, self.*.allocator);
+                    self.remaining_bytes -= field_def.size;
                 }
                 return Message{
                     .global_id = message_def.global_id,
