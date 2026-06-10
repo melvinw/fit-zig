@@ -129,7 +129,7 @@ const MessageDefinition = struct {
     local_id: u8,
     global_id: u16,
     byte_order: std.builtin.Endian,
-    fields: std.ArrayList(FieldDefinition),
+    fields: []FieldDefinition,
 };
 
 const FieldData = struct {
@@ -148,13 +148,13 @@ const FieldData = struct {
 
 const Message = struct {
     global_id: u16,
-    fields: std.ArrayList(FieldData),
+    fields: []FieldData,
 
     pub fn deinit(self: *Message, allocator: std.mem.Allocator) void {
-        for (self.*.fields.items) |*field| {
+        for (self.*.fields) |*field| {
             field.deinit(allocator);
         }
-        self.*.fields.deinit(allocator);
+        allocator.free(self.*.fields);
     }
 };
 
@@ -192,7 +192,7 @@ const Decoder = struct {
     pub fn deinit(self: *Decoder) void {
         for (&self.*.message_definitions) |*optional_def| {
             if (optional_def.*) |*def| {
-                def.*.fields.deinit(self.*.allocator);
+                self.*.allocator.free(def.*.fields);
             }
         }
     }
@@ -252,9 +252,8 @@ const Decoder = struct {
         switch (record_header.message_type) {
             MessageType.definition => {
                 const header = try self.*.reader.takeStruct(DefinitionHeader, .little);
-                var fields = try std.ArrayList(FieldDefinition).initCapacity(self.*.allocator, header.num_fields);
-                for (0..header.num_fields) |_| {
-                    const field = try fields.addOneBounded();
+                const fields = try self.*.allocator.alloc(FieldDefinition, header.num_fields);
+                for (fields) |*field| {
                     field.*.id = try self.*.reader.takeByte();
                     field.*.size = try self.*.reader.takeByte();
                     field.*.type = @enumFromInt(try self.*.reader.takeByte() & ~@as(u8, 0b1000_0000));
@@ -279,11 +278,10 @@ const Decoder = struct {
             },
             MessageType.data => {
                 const message_def = self.*.message_definitions[record_header.local_message_id].?;
-                var fields = try std.ArrayList(FieldData).initCapacity(self.*.allocator, message_def.fields.items.len);
-                for (message_def.fields.items) |field_def| {
-                    const field = try fields.addOneBounded();
-                    field.*.id = field_def.id;
-                    field.*.raw_value = try FieldValue.from_slice(field_def.type, try self.*.reader.take(field_def.size), message_def.byte_order, self.*.allocator);
+                var fields = try self.*.allocator.alloc(FieldData, message_def.fields.len);
+                for (message_def.fields, 0..) |field_def, i| {
+                    fields[i].id = field_def.id;
+                    fields[i].raw_value = try FieldValue.from_slice(field_def.type, try self.*.reader.take(field_def.size), message_def.byte_order, self.*.allocator);
                     self.remaining_bytes -= field_def.size;
                 }
                 return Message{
@@ -318,16 +316,16 @@ test "decode" {
     defer decoder.deinit();
     try std.testing.expectEqual(268513, decoder.remaining_bytes);
     try std.testing.expectEqual(null, try decoder.readRecord());
-    try std.testing.expectEqual(7, decoder.message_definitions[0].?.fields.capacity);
+    try std.testing.expectEqual(7, decoder.message_definitions[0].?.fields.len);
     var message = try decoder.readRecord();
     try std.testing.expect(message != null);
     defer message.?.deinit(std.testing.allocator);
-    try std.testing.expectEqual(FieldValue{ .uint32z = 3609658516 }, message.?.fields.items[0].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 1149696152 }, message.?.fields.items[1].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields.items[2].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields.items[2].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 1 }, message.?.fields.items[3].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 4061 }, message.?.fields.items[4].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 0xFFFF }, message.?.fields.items[5].raw_value);
-    try std.testing.expectEqual(FieldValue{ .enumeration = 4 }, message.?.fields.items[6].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint32z = 3609658516 }, message.?.fields[0].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 1149696152 }, message.?.fields[1].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 1 }, message.?.fields[3].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 4061 }, message.?.fields[4].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 0xFFFF }, message.?.fields[5].raw_value);
+    try std.testing.expectEqual(FieldValue{ .enumeration = 4 }, message.?.fields[6].raw_value);
 }
