@@ -61,7 +61,7 @@ const FieldValue = union(FieldType) {
     uint64: u64,
     uint64z: u64,
 
-    pub fn from_slice(tag: FieldType, data: []const u8, byte_order: std.builtin.Endian, _: std.mem.Allocator) !FieldValue {
+    pub fn fromBytes(tag: FieldType, data: []const u8, byte_order: std.builtin.Endian, _: std.mem.Allocator) !FieldValue {
         switch (tag) {
             FieldType.enumeration => {
                 return FieldValue{ .enumeration = data[0] };
@@ -90,7 +90,7 @@ const FieldValue = union(FieldType) {
             // Need a strategy for determining how the device that generated
             // the FIT file represents floating point numbers and translating
             // that to the host representation (likely IEEE 754). Until then
-            // it's an error to use float fields. 
+            // it's an error to use float fields.
             FieldType.float32 => {
                 return error.NotImplemented;
             },
@@ -130,10 +130,46 @@ const FieldDefinition = packed struct(u24) {
 };
 
 const MessageDefinition = struct {
-    local_id: u8,
     global_id: u16,
     byte_order: std.builtin.Endian,
     fields: []FieldDefinition,
+
+    pub fn fromReader(reader: *std.Io.Reader, allocator: std.mem.Allocator) !struct { usize, MessageDefinition } {
+        const MessageByteOrder = enum(u8) {
+            little_endian = 0,
+            big_endian = 1,
+        };
+        const DefinitionHeader = packed struct(u40) {
+            reserved: u8,
+            byte_order: MessageByteOrder,
+            global_id: u16,
+            num_fields: u8,
+        };
+
+        const header = try reader.takeStruct(DefinitionHeader, .little);
+        const fields = try allocator.alloc(FieldDefinition, header.num_fields);
+        for (fields) |*field| {
+            field.*.id = try reader.takeByte();
+            field.*.size = try reader.takeByte();
+            field.*.type = @enumFromInt(try reader.takeByte() & ~@as(u8, 0b1000_0000));
+        }
+        return .{ fields.len * 3 + @bitSizeOf(DefinitionHeader) * 8, MessageDefinition{
+            .global_id = header.global_id,
+            .byte_order = switch (header.byte_order) {
+                MessageByteOrder.little_endian => .little,
+                MessageByteOrder.big_endian => .big,
+            },
+            .fields = fields,
+        } };
+    }
+
+    pub fn messageSize(self: MessageDefinition) usize {
+        var bytes_read: usize = 0;
+        for (self.fields) |field_def| {
+            bytes_read += field_def.size;
+        }
+        return bytes_read;
+    }
 };
 
 const FieldData = struct {
@@ -153,6 +189,21 @@ const FieldData = struct {
 const Message = struct {
     global_id: u16,
     fields: []FieldData,
+
+    pub fn fromBytes(message_def: MessageDefinition, buffer: []const u8, allocator: std.mem.Allocator) !Message {
+        assert(buffer.len == message_def.messageSize());
+        var offset: usize = 0;
+        var fields = try allocator.alloc(FieldData, message_def.fields.len);
+        for (message_def.fields, 0..) |field_def, i| {
+            fields[i].id = field_def.id;
+            fields[i].raw_value = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator);
+            offset += field_def.size;
+        }
+        return Message{
+            .global_id = message_def.global_id,
+            .fields = fields,
+        };
+    }
 
     pub fn deinit(self: *Message, allocator: std.mem.Allocator) void {
         for (self.*.fields) |*field| {
@@ -243,55 +294,21 @@ const Decoder = struct {
         }
         self.remaining_bytes -= 1;
 
-        const MessageByteOrder = enum(u8) {
-            little_endian = 0,
-            big_endian = 1,
-        };
-        const DefinitionHeader = packed struct(u40) {
-            reserved: u8,
-            byte_order: MessageByteOrder,
-            global_id: u16,
-            num_fields: u8,
-        };
         switch (record_header.message_type) {
             MessageType.definition => {
-                const header = try self.*.reader.takeStruct(DefinitionHeader, .little);
-                const fields = try self.*.allocator.alloc(FieldDefinition, header.num_fields);
-                for (fields) |*field| {
-                    field.*.id = try self.*.reader.takeByte();
-                    field.*.size = try self.*.reader.takeByte();
-                    field.*.type = @enumFromInt(try self.*.reader.takeByte() & ~@as(u8, 0b1000_0000));
-                }
-                self.*.message_definitions[record_header.local_message_id] = MessageDefinition{
-                    .local_id = record_header.local_message_id,
-                    .global_id = header.global_id,
-                    .byte_order = switch (header.byte_order) {
-                        MessageByteOrder.little_endian => .little,
-                        MessageByteOrder.big_endian => .big,
-                    },
-                    .fields = fields,
-                };
                 if (record_header.has_developer_fields) {
-                    const num_dev_fields = try self.*.reader.takeByte();
-                    if (num_dev_fields != 0) {
-                        return error.NotImplemented;
-                    }
+                    return error.NotImplemented;
                 }
-                // 3 bytes per message field + definition header fields (6 bytes)
-                self.*.remaining_bytes -= header.num_fields * 3 + 6;
+                const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator);
+                self.*.remaining_bytes -= bytes_read;
+                self.*.message_definitions[record_header.local_message_id] = definition;
             },
             MessageType.data => {
                 const message_def = self.*.message_definitions[record_header.local_message_id].?;
-                var fields = try self.*.allocator.alloc(FieldData, message_def.fields.len);
-                for (message_def.fields, 0..) |field_def, i| {
-                    fields[i].id = field_def.id;
-                    fields[i].raw_value = try FieldValue.from_slice(field_def.type, try self.*.reader.take(field_def.size), message_def.byte_order, self.*.allocator);
-                    self.remaining_bytes -= field_def.size;
-                }
-                return Message{
-                    .global_id = message_def.global_id,
-                    .fields = fields,
-                };
+                const message_buffer = try self.*.reader.take(message_def.messageSize());
+                const message = try Message.fromBytes(message_def, message_buffer, self.*.allocator);
+                self.remaining_bytes -= message_def.messageSize();
+                return message;
             },
         }
         return null;
