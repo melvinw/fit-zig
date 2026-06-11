@@ -87,11 +87,15 @@ const FieldValue = union(FieldType) {
             FieldType.string => {
                 return error.NotImplemented;
             },
+            // Need a strategy for determining how the device that generated
+            // the FIT file represents floating point numbers and translating
+            // that to the host representation (likely IEEE 754). Until then
+            // it's an error to use float fields. 
             FieldType.float32 => {
-                return FieldValue{ .float32 = std.mem.readPackedInt(i32, data, 0, byte_order) };
+                return error.NotImplemented;
             },
             FieldType.float64 => {
-                return FieldValue{ .float64 = std.mem.readPackedInt(i64, data, 0, byte_order) };
+                return error.NotImplemented;
             },
             FieldType.uint8z => {
                 return FieldValue{ .uint8z = data[0] };
