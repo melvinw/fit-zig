@@ -129,7 +129,7 @@ const FieldValue = union(FieldType) {
                 return FieldValue{ .uint64 = std.mem.readPackedInt(u64, data, 0, byte_order) };
             },
             FieldType.uint64z => {
-                return FieldValue{ .uint64 = std.mem.readPackedInt(u64, data, 0, byte_order) };
+                return FieldValue{ .uint64z = std.mem.readPackedInt(u64, data, 0, byte_order) };
             },
         }
         unreachable;
@@ -329,6 +329,40 @@ test "crc" {
     try std.testing.expectEqual(0x4ed4, compute_crc(payload[0..]));
     // Should gracefully handle an empty slice
     try std.testing.expectEqual(0, compute_crc(payload[0..0]));
+}
+
+test "decode integer types" {
+    const buffer = [_]u8{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+
+    // Big Endian
+    try std.testing.expectEqual(FieldValue{ .enumeration = 0x01 }, try FieldValue.fromBytes(FieldType.enumeration, buffer[0..1], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .byte = 0x01 }, try FieldValue.fromBytes(FieldType.byte, buffer[0..1], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint8 = 0x01 }, try FieldValue.fromBytes(FieldType.uint8, buffer[0..1], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint8 = 0x01 }, try FieldValue.fromBytes(FieldType.sint8, buffer[0..1], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint16 = 0x0102 }, try FieldValue.fromBytes(FieldType.uint16, buffer[0..2], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint16z = 0x0102 }, try FieldValue.fromBytes(FieldType.uint16z, buffer[0..2], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint16 = 0x0102 }, try FieldValue.fromBytes(FieldType.sint16, buffer[0..2], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0x01020304 }, try FieldValue.fromBytes(FieldType.uint32, buffer[0..4], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint32z = 0x01020304 }, try FieldValue.fromBytes(FieldType.uint32z, buffer[0..4], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint32 = 0x01020304 }, try FieldValue.fromBytes(FieldType.sint32, buffer[0..4], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint64 = 0x0102030405060708 }, try FieldValue.fromBytes(FieldType.uint64, buffer[0..8], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint64z = 0x0102030405060708 }, try FieldValue.fromBytes(FieldType.uint64z, buffer[0..8], .big, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint64 = 0x0102030405060708 }, try FieldValue.fromBytes(FieldType.sint64, buffer[0..8], .big, std.testing.allocator));
+
+    // Little Endian
+    try std.testing.expectEqual(FieldValue{ .enumeration = 0x01 }, try FieldValue.fromBytes(FieldType.enumeration, buffer[0..1], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .byte = 0x01 }, try FieldValue.fromBytes(FieldType.byte, buffer[0..1], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint8 = 0x01 }, try FieldValue.fromBytes(FieldType.uint8, buffer[0..1], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint8 = 0x01 }, try FieldValue.fromBytes(FieldType.sint8, buffer[0..1], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint16 = 0x0201 }, try FieldValue.fromBytes(FieldType.uint16, buffer[0..2], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint16z = 0x0201 }, try FieldValue.fromBytes(FieldType.uint16z, buffer[0..2], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint16 = 0x0201 }, try FieldValue.fromBytes(FieldType.sint16, buffer[0..2], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0x04030201 }, try FieldValue.fromBytes(FieldType.uint32, buffer[0..4], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint32z = 0x04030201 }, try FieldValue.fromBytes(FieldType.uint32z, buffer[0..4], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint32 = 0x04030201 }, try FieldValue.fromBytes(FieldType.sint32, buffer[0..4], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint64 = 0x0807060504030201 }, try FieldValue.fromBytes(FieldType.uint64, buffer[0..8], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .uint64z = 0x0807060504030201 }, try FieldValue.fromBytes(FieldType.uint64z, buffer[0..8], .little, std.testing.allocator));
+    try std.testing.expectEqual(FieldValue{ .sint64 = 0x0807060504030201 }, try FieldValue.fromBytes(FieldType.sint64, buffer[0..8], .little, std.testing.allocator));
 }
 
 test "decode string field" {
