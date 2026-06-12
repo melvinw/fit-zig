@@ -61,7 +61,16 @@ const FieldValue = union(FieldType) {
     uint64: u64,
     uint64z: u64,
 
-    pub fn fromBytes(tag: FieldType, data: []const u8, byte_order: std.builtin.Endian, _: std.mem.Allocator) !FieldValue {
+    pub fn deinit(self: *const FieldValue, allocator: std.mem.Allocator) void {
+        switch (self.*) {
+            .string => |str| {
+                allocator.free(str);
+            },
+            else => {},
+        }
+    }
+
+    pub fn fromBytes(tag: FieldType, data: []const u8, byte_order: std.builtin.Endian, allocator: std.mem.Allocator) !FieldValue {
         switch (tag) {
             FieldType.enumeration => {
                 return FieldValue{ .enumeration = data[0] };
@@ -85,7 +94,11 @@ const FieldValue = union(FieldType) {
                 return FieldValue{ .uint32 = std.mem.readPackedInt(u32, data, 0, byte_order) };
             },
             FieldType.string => {
-                return error.NotImplemented;
+                const len = std.mem.find(u8, data, &[_]u8{0});
+                const src_str = data[0..len.? :0];
+                const dst_str = try allocator.allocSentinel(u8, len.?, 0);
+                @memcpy(dst_str, src_str);
+                return FieldValue{ .string = dst_str };
             },
             // Need a strategy for determining how the device that generated
             // the FIT file represents floating point numbers and translating
@@ -177,12 +190,7 @@ const FieldData = struct {
     raw_value: FieldValue,
 
     pub fn deinit(self: *FieldData, allocator: std.mem.Allocator) void {
-        switch (self.*.raw_value) {
-            FieldValue.string => |str| {
-                allocator.free(str);
-            },
-            else => {},
-        }
+        self.*.raw_value.deinit(allocator);
     }
 };
 
@@ -321,6 +329,14 @@ test "crc" {
     try std.testing.expectEqual(0x4ed4, compute_crc(payload[0..]));
     // Should gracefully handle an empty slice
     try std.testing.expectEqual(0, compute_crc(payload[0..0]));
+}
+
+test "decode string field" {
+    const buffer = [_]u8{ 'f', 'o', 'o', 'b', 'a', 'r', 0x0, 0x0, 0x0 };
+    const value = try FieldValue.fromBytes(FieldType.string, buffer[0..], .big, std.testing.allocator);
+    defer value.deinit(std.testing.allocator);
+    try std.testing.expectEqual(FieldType.string, @as(FieldType, value));
+    try std.testing.expectEqualStrings("foobar", value.string);
 }
 
 test "decode" {
