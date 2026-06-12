@@ -221,7 +221,7 @@ const Message = struct {
     }
 };
 
-fn compute_crc(payload: []const u8) u16 {
+fn computeCrc(payload: []const u8) u16 {
     const crc_table = [_]u16{
         0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
         0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400,
@@ -242,9 +242,9 @@ fn compute_crc(payload: []const u8) u16 {
     return crc;
 }
 
-const max_message_defs = 16;
-
 const Decoder = struct {
+    const max_message_defs = 16;
+
     protocol_version: u8,
     profile_version: u16,
     remaining_bytes: usize,
@@ -269,7 +269,7 @@ const Decoder = struct {
             return error.MalformedHeader;
         }
 
-        const crc: u16 = compute_crc(buffer[0..12]);
+        const crc: u16 = computeCrc(buffer[0..12]);
         const expected_crc = std.mem.readPackedInt(u16, buffer, 96, .little);
         if (expected_crc != crc and expected_crc != 0) {
             return error.HeaderCrcMismatch;
@@ -326,9 +326,9 @@ const Decoder = struct {
 test "crc" {
     // extraced from a .FIT file produced by the edge 540
     const payload = [_]u8{ 0x0e, 0x10, 0xd0, 0x52, 0xe1, 0x18, 0x04, 0x00, 0x2e, 0x46, 0x49, 0x54 };
-    try std.testing.expectEqual(0x4ed4, compute_crc(payload[0..]));
+    try std.testing.expectEqual(0x4ed4, computeCrc(payload[0..]));
     // Should gracefully handle an empty slice
-    try std.testing.expectEqual(0, compute_crc(payload[0..0]));
+    try std.testing.expectEqual(0, computeCrc(payload[0..0]));
 }
 
 test "decode integer types" {
