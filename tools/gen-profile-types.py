@@ -70,7 +70,7 @@ class Message:
     fields: list[Field]
 
     def handle_row(self, row: list[str]):
-        print('MESSAGE', self.name, row)
+        print("MESSAGE", self.name, row)
         assert len(row[2]) > 0 and len(row[3]) > 0
 
 
@@ -83,13 +83,12 @@ def render_profile(profile_f, types: dict):
     current = None
 
     for row in reader:
-        if row[0:3] == ['', '', '']:
+        if row[0:3] == ["", "", ""]:
             continue
 
         if len(row) == 5 and len(row[0]) > 0 and len(row[1]) > 0:
             name, base_type, _, _, comment = row
-            current = Enum(name=name, base_type=base_type, values=[],
-                           comment=comment)
+            current = Enum(name=name, base_type=base_type, values=[], comment=comment)
             assert current.name not in types
             types[current.name] = current
             continue
