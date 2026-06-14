@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import csv
+import shlex
 import sys
 from dataclasses import dataclass
 
@@ -7,6 +8,8 @@ from dataclasses import dataclass
 def _snake_to_pascal(name: str) -> str:
     parts = name.split("_")
     return "".join(map(lambda p: p.capitalize(), parts))
+
+
 @dataclass
 class Enum:
     name: str
@@ -18,6 +21,7 @@ class Enum:
         _, _, name, value, comment = row
         assert len(name) > 0 and len(value) > 0
         self.values.append((name, value, comment))
+
     def render(self, types: dict):
         zig_base_type = None
 
@@ -70,7 +74,7 @@ class Message:
         assert len(row[2]) > 0 and len(row[3]) > 0
 
 
-def main(profile_f):
+def render_profile(profile_f, types: dict):
     reader = csv.reader(profile_f)
 
     # skip the header
@@ -92,13 +96,24 @@ def main(profile_f):
 
         if len(row[0]) > 0:
             current = Message(name=row[0], fields=[])
+            assert current.name not in types
+            types[current.name] = current
             continue
 
         assert current is not None
         assert len(row[0]) == 0
         current.handle_row(row)
 
+    cmd = shlex.join(sys.argv)
+    print("//! This file was generated from a FIT profile. Do not edit by hand.")
+    print(f"//! Instead, run this command: '{cmd}'")
+    for typ in types.values():
+        print()
+        typ.render(types)
+
 
 if __name__ == "__main__":
-    with open(sys.argv[1], "r") as f:
-        main(f)
+    types = {}
+    for path in sys.argv[1:]:
+        with open(path, "r") as f:
+            render_profile(f, types)
