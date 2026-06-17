@@ -40,6 +40,16 @@ const FieldType = enum(u8) {
     sint64 = 0x0E,
     uint64 = 0x0F,
     uint64z = 0x10,
+
+    pub fn packedSize(t: FieldType) usize {
+        return switch (t) {
+            .enumeration, .sint8, .uint8, .uint8z, .byte => 1,
+            .sint16, .uint16, .uint16z => 2,
+            .sint32, .uint32, .uint32z, .float32 => 4,
+            .sint64, .uint64, .uint64z, .float64 => 8,
+            .string => 1, // XXX
+        };
+    }
 };
 
 const FieldValue = union(FieldType) {
@@ -187,10 +197,13 @@ const MessageDefinition = struct {
 
 const FieldData = struct {
     id: u8,
-    raw_value: FieldValue,
+    raw_value: []FieldValue,
 
     pub fn deinit(self: *FieldData, allocator: std.mem.Allocator) void {
-        self.*.raw_value.deinit(allocator);
+        for (self.*.raw_value) |value| {
+            value.deinit(allocator);
+        }
+        allocator.free(self.*.raw_value);
     }
 };
 
@@ -204,8 +217,19 @@ const Message = struct {
         var fields = try allocator.alloc(FieldData, message_def.fields.len);
         for (message_def.fields, 0..) |field_def, i| {
             fields[i].id = field_def.id;
-            fields[i].raw_value = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator);
-            offset += field_def.size;
+            if (field_def.type == .string) {
+                fields[i].raw_value = try allocator.alloc(FieldValue, 1);
+                fields[i].raw_value[0] = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator);
+                offset += field_def.size;
+            } else {
+                assert(field_def.size % field_def.type.packedSize() == 0);
+                const num_elements = field_def.size / field_def.type.packedSize();
+                fields[i].raw_value = try allocator.alloc(FieldValue, num_elements);
+                for (0..num_elements) |j| {
+                    fields[i].raw_value[j] = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator);
+                    offset += field_def.type.packedSize();
+                }
+            }
         }
         return Message{
             .global_id = message_def.global_id,
@@ -389,6 +413,7 @@ test "decode message" {
         .{ .id = 0xcc, .size = 4, .type = FieldType.sint32 },
         .{ .id = 0xdd, .size = 2, .type = FieldType.sint16 },
         .{ .id = 0xee, .size = 1, .type = FieldType.sint8 },
+        .{ .id = 0xff, .size = 6, .type = FieldType.uint16 },
     };
     var message_def = MessageDefinition{
         .global_id = 1234,
@@ -411,13 +436,14 @@ test "decode message" {
         0x09, 0x0a, 0x0b, 0x0c, // field 11
         0x0d, 0x0e, // field 12
         0x0f, // field 13
+        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, // field 14 (array of 3 uint16)
     };
 
     {
         message_def.byte_order = .big;
         const message = try Message.fromBytes(message_def, &buffer, std.testing.allocator);
         defer message.deinit(std.testing.allocator);
-        try std.testing.expectEqual(14, message.fields.len);
+        try std.testing.expectEqual(15, message.fields.len);
         try std.testing.expectEqual(0x11, message.fields[0].id);
         try std.testing.expectEqual(0x22, message.fields[1].id);
         try std.testing.expectEqual(0x33, message.fields[2].id);
@@ -432,28 +458,32 @@ test "decode message" {
         try std.testing.expectEqual(0xcc, message.fields[11].id);
         try std.testing.expectEqual(0xdd, message.fields[12].id);
         try std.testing.expectEqual(0xee, message.fields[13].id);
-        try std.testing.expectEqual(FieldValue{ .enumeration = 0x11 }, message.fields[0].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint8 = 0xaa }, message.fields[1].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint16 = 0xdead }, message.fields[2].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint32 = 0xfeedbeef }, message.fields[3].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint64 = 0xdeadbeef00c0ffee }, message.fields[4].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint8z = 0x11 }, message.fields[5].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint16z = 0x2233 }, message.fields[6].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint32z = 0x44556677 }, message.fields[7].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint64z = 0x8899aabbccddeeff }, message.fields[8].raw_value);
-        try std.testing.expectEqual(FieldType.string, @as(FieldType, message.fields[9].raw_value));
-        try std.testing.expectEqualStrings("hello, world!", message.fields[9].raw_value.string);
-        try std.testing.expectEqual(FieldValue{ .sint64 = 0x0102030405060708 }, message.fields[10].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint32 = 0x090a0b0c }, message.fields[11].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint16 = 0x0d0e }, message.fields[12].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint8 = 0x0f }, message.fields[13].raw_value);
+        try std.testing.expectEqual(0xff, message.fields[14].id);
+        try std.testing.expectEqual(FieldValue{ .enumeration = 0x11 }, message.fields[0].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint8 = 0xaa }, message.fields[1].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0xdead }, message.fields[2].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint32 = 0xfeedbeef }, message.fields[3].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint64 = 0xdeadbeef00c0ffee }, message.fields[4].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint8z = 0x11 }, message.fields[5].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16z = 0x2233 }, message.fields[6].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint32z = 0x44556677 }, message.fields[7].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint64z = 0x8899aabbccddeeff }, message.fields[8].raw_value[0]);
+        try std.testing.expectEqual(FieldType.string, @as(FieldType, message.fields[9].raw_value[0]));
+        try std.testing.expectEqualStrings("hello, world!", message.fields[9].raw_value[0].string);
+        try std.testing.expectEqual(FieldValue{ .sint64 = 0x0102030405060708 }, message.fields[10].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint32 = 0x090a0b0c }, message.fields[11].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint16 = 0x0d0e }, message.fields[12].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint8 = 0x0f }, message.fields[13].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x1122 }, message.fields[14].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x3344 }, message.fields[14].raw_value[1]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x5566 }, message.fields[14].raw_value[2]);
     }
 
     {
         message_def.byte_order = .little;
         const message = try Message.fromBytes(message_def, &buffer, std.testing.allocator);
         defer message.deinit(std.testing.allocator);
-        try std.testing.expectEqual(14, message.fields.len);
+        try std.testing.expectEqual(15, message.fields.len);
         try std.testing.expectEqual(0x11, message.fields[0].id);
         try std.testing.expectEqual(0x22, message.fields[1].id);
         try std.testing.expectEqual(0x33, message.fields[2].id);
@@ -468,21 +498,25 @@ test "decode message" {
         try std.testing.expectEqual(0xcc, message.fields[11].id);
         try std.testing.expectEqual(0xdd, message.fields[12].id);
         try std.testing.expectEqual(0xee, message.fields[13].id);
-        try std.testing.expectEqual(FieldValue{ .enumeration = 0x11 }, message.fields[0].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint8 = 0xaa }, message.fields[1].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint16 = 0xadde }, message.fields[2].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint32 = 0xefbeedfe }, message.fields[3].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint64 = 0xeeffc000efbeadde }, message.fields[4].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint8z = 0x11 }, message.fields[5].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint16z = 0x3322 }, message.fields[6].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint32z = 0x77665544 }, message.fields[7].raw_value);
-        try std.testing.expectEqual(FieldValue{ .uint64z = 0xffeeddccbbaa9988 }, message.fields[8].raw_value);
-        try std.testing.expectEqual(FieldType.string, @as(FieldType, message.fields[9].raw_value));
-        try std.testing.expectEqualStrings("hello, world!", message.fields[9].raw_value.string);
-        try std.testing.expectEqual(FieldValue{ .sint64 = 0x0807060504030201 }, message.fields[10].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint32 = 0x0c0b0a09 }, message.fields[11].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint16 = 0x0e0d }, message.fields[12].raw_value);
-        try std.testing.expectEqual(FieldValue{ .sint8 = 0x0f }, message.fields[13].raw_value);
+        try std.testing.expectEqual(0xff, message.fields[14].id);
+        try std.testing.expectEqual(FieldValue{ .enumeration = 0x11 }, message.fields[0].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint8 = 0xaa }, message.fields[1].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0xadde }, message.fields[2].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint32 = 0xefbeedfe }, message.fields[3].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint64 = 0xeeffc000efbeadde }, message.fields[4].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint8z = 0x11 }, message.fields[5].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16z = 0x3322 }, message.fields[6].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint32z = 0x77665544 }, message.fields[7].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint64z = 0xffeeddccbbaa9988 }, message.fields[8].raw_value[0]);
+        try std.testing.expectEqual(FieldType.string, @as(FieldType, message.fields[9].raw_value[0]));
+        try std.testing.expectEqualStrings("hello, world!", message.fields[9].raw_value[0].string);
+        try std.testing.expectEqual(FieldValue{ .sint64 = 0x0807060504030201 }, message.fields[10].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint32 = 0x0c0b0a09 }, message.fields[11].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint16 = 0x0e0d }, message.fields[12].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .sint8 = 0x0f }, message.fields[13].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x2211 }, message.fields[14].raw_value[0]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x4433 }, message.fields[14].raw_value[1]);
+        try std.testing.expectEqual(FieldValue{ .uint16 = 0x6655 }, message.fields[14].raw_value[2]);
     }
 }
 
@@ -504,12 +538,12 @@ test "decode" {
     var message = try decoder.readRecord();
     try std.testing.expect(message != null);
     defer message.?.deinit(std.testing.allocator);
-    try std.testing.expectEqual(FieldValue{ .uint32z = 3609658516 }, message.?.fields[0].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 1149696152 }, message.?.fields[1].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 1 }, message.?.fields[3].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 4061 }, message.?.fields[4].raw_value);
-    try std.testing.expectEqual(FieldValue{ .uint16 = 0xFFFF }, message.?.fields[5].raw_value);
-    try std.testing.expectEqual(FieldValue{ .enumeration = 4 }, message.?.fields[6].raw_value);
+    try std.testing.expectEqual(FieldValue{ .uint32z = 3609658516 }, message.?.fields[0].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 1149696152 }, message.?.fields[1].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint32 = 0xFFFFFFFF }, message.?.fields[2].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 1 }, message.?.fields[3].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 4061 }, message.?.fields[4].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .uint16 = 0xFFFF }, message.?.fields[5].raw_value[0]);
+    try std.testing.expectEqual(FieldValue{ .enumeration = 4 }, message.?.fields[6].raw_value[0]);
 }
