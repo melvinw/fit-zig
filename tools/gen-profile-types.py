@@ -12,6 +12,13 @@ def _snake_to_pascal(name: str) -> str:
     return "".join(map(lambda p: p.capitalize(), parts))
 
 
+def _parse_scale(raw: str) -> float | int:
+    try:
+        return int(raw)
+    except:
+        return float(raw)
+
+
 def _fit_to_zig(typ: str, types: dict) -> str:
     if typ in ("uint8", "uint8z", "byte"):
         return "u8"
@@ -102,7 +109,8 @@ class Enum:
 class Component:
     name: str
     width: int
-    scale: float | None
+    scale: float | int | None
+    offset: int | None
 
 
 @dataclass
@@ -119,25 +127,101 @@ class Field:
     field_type: str
     is_array: bool
     comment: str
-    scale: float | None
+    scale: float | int | None
     offset: int | None
     units: str | None
     components: list[Component]
     subfields: list[SubField]
 
-    def render(self, types: dict):
+    def render_def(self, types: dict):
         if len(self.components) > 0 or len(self.subfields) > 0:
             # ignore subfields and components for now.
             return
 
-        zig_type = _fit_to_zig(self.field_type, types)
-        if self.is_array:
+        zig_type = (
+            "f32" if self.scale is not None else _fit_to_zig(self.field_type, types)
+        )
+
+        if self.is_array and self.field_type != "string":
             zig_type = f"[]{zig_type}"
 
         if len(self.comment) > 0:
             print(f"    /// {self.comment}")
 
-        print(f"    {self.name}: {zig_type},")
+        print(f"    {self.name}: ?{zig_type} = null,")
+
+    def render_constructor_case(self, types: dict):
+        if len(self.components) > 0 or len(self.subfields) > 0:
+            # ignore subfields and components for now.
+            return
+
+        zig_type = (
+            "f32" if self.scale is not None else _fit_to_zig(self.field_type, types)
+        )
+
+        if self.field_type in types or self.field_type == "bool":
+            # TODO
+            # NOTE: bool is not considered a base type. probably implemented as
+            # an enum. needs special handling.
+            return
+
+        indent = " " * 16
+        print(f"{indent}{self.field_id} => {{")
+        print(
+            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value) == .{self.field_type});"
+        )
+        if self.scale or self.offset:
+            if self.is_array:
+                print(
+                    f"{indent}    msg.*.{self.name} = allocator.alloc(f32, rf.raw_value.len);"
+                )
+                print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
+                print(
+                    f"{indent}        msg.*.{self.name}[i] = (@as(f32, raw_value.{self.field_type}) / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                )
+                print(f"{indent}    }}")
+            else:
+                print(
+                    f"{indent}    msg.*.{self.name} = (@as(f32, rf.raw_value.{self.field_type}) / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                )
+        else:
+            if self.is_array:
+                print(
+                    f"{indent}    msg.*.{self.name} = allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.len);"
+                )
+                print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
+                print(
+                    f"{indent}        msg.*.{self.name}[i] = raw_value.{self.field_type};"
+                )
+                print(f"{indent}    }}")
+            elif self.field_type == "string":
+                print(
+                    f"{indent}    msg.*.{self.name} = allocator.dupeSentinel(u8, rf.raw_value[0].{self.field_type}, 0);"
+                )
+            else:
+                print(
+                    f"{indent}    msg.*.{self.name} = rf.raw_value[0].{self.field_type};"
+                )
+        print(f"{indent}}},")
+
+    def render_deinit(self):
+        if not self.needs_allocator():
+            return
+
+        print(f"        allocator.free(msg.*.{self.name});")
+
+    def needs_allocator(self):
+        return self.field_type == "string" or self.is_array
+
+    def ignored(self, types: dict):
+        return any(
+            (
+                self.field_type in types,
+                self.field_type == "bool",
+                len(self.components) > 0,
+                len(self.subfields) > 0,
+            )
+        )
 
 
 MessageRow = collections.namedtuple(
@@ -179,16 +263,23 @@ class Message:
         )
         component_scales = [None for _ in component_names]
         if "," in row.scale:
-            component_scales = list(map(float, row.scale.split(",")))
+            component_scales = list(map(_parse_scale, row.scale.split(",")))
+
+        component_offsets = [None for _ in component_names]
+        if "," in row.offset:
+            component_offsets = list(map(int, row.offset.split(",")))
 
         assert len(component_names) == 0 or (
-            len(component_scales) == len(component_widths) == len(component_names)
+            len(component_scales)
+            == len(component_widths)
+            == len(component_names)
+            == len(component_offsets)
         )
 
         components = [
-            Component(name=name, width=width, scale=scale)
-            for name, width, scale in zip(
-                component_names, component_widths, component_scales
+            Component(name=name, width=width, scale=scale, offset=offset)
+            for name, width, scale, offset in zip(
+                component_names, component_widths, component_scales, component_offsets
             )
         ]
 
@@ -201,11 +292,15 @@ class Message:
                     is_array=len(row.array) > 0,
                     comment=row.comment,
                     scale=(
-                        float(row.scale)
+                        _parse_scale(row.scale)
                         if len(row.scale) > 0 and "," not in row.scale
                         else None
                     ),
-                    offset=int(row.offset) if len(row.offset) > 0 else None,
+                    offset=(
+                        int(row.offset)
+                        if len(row.offset) > 0 and "," not in row.offset
+                        else None
+                    ),
                     units=row.units,
                     components=list(components),
                     subfields=[],
@@ -228,11 +323,50 @@ class Message:
 
         print(f"pub const {zig_name} = struct {{")
         self._render_field_defs(types)
+        print()
+        self._render_constructor(types)
+        print()
+        if self._need_allocator(types):
+            self._render_deinit()
         print("};")
+
+    def _need_allocator(self, types: dict):
+        return any(
+            field.needs_allocator() and not field.ignored(types)
+            for field in self.fields
+        )
 
     def _render_field_defs(self, types: dict):
         for field in self.fields:
-            field.render(types)
+            field.render_def(types)
+
+    def _render_constructor(self, types: dict):
+        zig_name = _snake_to_pascal(self.name)
+        alloc_param = (
+            ", allocator: std.mem.Allocator" if self._need_allocator(types) else ""
+        )
+        print(
+            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []gnsslib.FieldData{alloc_param}) !void {{"
+        )
+        # XXX: workaround to supress unushed param error until all field types
+        # are handled. can be removed after that point.
+        print("        msg.* = {};")
+        print("        for (raw_fields) |rf| {")
+        print("            switch (rf.id) {")
+        for field in self.fields:
+            field.render_constructor_case(types)
+        print("            }")
+        print("        }")
+        print("    }")
+
+    def _render_deinit(self):
+        zig_name = _snake_to_pascal(self.name)
+        print(
+            f"    pub fn deinit(msg: {zig_name}, allocator: std.mem.Allocator) void {{"
+        )
+        for field in self.fields:
+            field.render_deinit()
+        print("    }")
 
 
 def read_profile(profile_f, types: dict):
@@ -269,6 +403,9 @@ if __name__ == "__main__":
     cmd = shlex.join(sys.argv)
     print("//! This file was generated from a FIT profile. Do not edit by hand.")
     print(f"//! Instead, run this command: '{cmd}'")
+    print('const std = @import("std");')
+    print(f'const gnsslib = @import("gnsslib");')
+    print("const assert = std.debug.assert;")
     types = {}
     for path in sys.argv[1:]:
         with open(path, "r") as f:
@@ -277,3 +414,13 @@ if __name__ == "__main__":
     for typ in types.values():
         print()
         typ.render(types)
+
+    print()
+    print("const Message = union(MesgNum) {")
+    for name, typ in types.items():
+        if isinstance(typ, Message):
+            original_name = name.removesuffix("_message")
+            zig_name = _snake_to_pascal(name)
+            print(f"    {original_name}: {zig_name},")
+
+    print("};")
