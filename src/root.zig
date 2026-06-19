@@ -3,7 +3,7 @@ const std = @import("std");
 const native_endian = @import("builtin").target.cpu.arch.endian();
 const assert = std.debug.assert;
 
-const DecodeError = error{
+pub const DecodeError = error{
     MalformedHeader,
     HeaderCrcMismatch,
     TruncatedPayload,
@@ -61,8 +61,8 @@ const FieldValue = union(FieldType) {
     sint32: i32,
     uint32: u32,
     string: [:0]u8,
-    float32: i32, // needs to be scaled by params in profile
-    float64: i64, // needs to be scaled by params in profile
+    float32: f32,
+    float64: f64,
     uint8z: u8,
     uint16z: u16,
     uint32z: u32,
@@ -110,15 +110,21 @@ const FieldValue = union(FieldType) {
                 @memcpy(dst_str, src_str);
                 return FieldValue{ .string = dst_str };
             },
-            // Need a strategy for determining how the device that generated
-            // the FIT file represents floating point numbers and translating
-            // that to the host representation (likely IEEE 754). Until then
-            // it's an error to use float fields.
+            // Documentation about how FIT files represents floating point
+            // numbers are sparse.  For now, just assume that the device that
+            // generated the file and the host reading it are both using IEEE
+            // 754.
             FieldType.float32 => {
-                return error.NotImplemented;
+                var val: f32 = undefined;
+                const dst = std.mem.asBytes(&val);
+                @memcpy(dst, data[0..@sizeOf(f32)]);
+                return FieldValue{ .float32 = val };
             },
             FieldType.float64 => {
-                return error.NotImplemented;
+                var val: f64 = undefined;
+                const dst = std.mem.asBytes(&val);
+                @memcpy(dst, data[0..@sizeOf(f64)]);
+                return FieldValue{ .float64 = val };
             },
             FieldType.uint8z => {
                 return FieldValue{ .uint8z = data[0] };
@@ -195,7 +201,7 @@ const MessageDefinition = struct {
     }
 };
 
-const FieldData = struct {
+pub const FieldData = struct {
     id: u8,
     raw_value: []FieldValue,
 
@@ -207,9 +213,16 @@ const FieldData = struct {
     }
 };
 
-const Message = struct {
+pub const Message = struct {
     global_id: u16,
     fields: []FieldData,
+
+    fn cleanup(fields: []FieldData, n: usize, allocator: std.mem.Allocator) void {
+        for (0..n) |i| {
+            fields[i].deinit(allocator);
+        }
+        allocator.free(fields);
+    }
 
     pub fn fromBytes(message_def: MessageDefinition, buffer: []const u8, allocator: std.mem.Allocator) !Message {
         assert(buffer.len == message_def.messageSize());
@@ -218,15 +231,27 @@ const Message = struct {
         for (message_def.fields, 0..) |field_def, i| {
             fields[i].id = field_def.id;
             if (field_def.type == .string) {
-                fields[i].raw_value = try allocator.alloc(FieldValue, 1);
-                fields[i].raw_value[0] = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator);
+                fields[i].raw_value = allocator.alloc(FieldValue, 1) catch |err| {
+                    cleanup(fields, message_def.fields.len, allocator);
+                    return err;
+                };
+                fields[i].raw_value[0] = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator) catch |err| {
+                    cleanup(fields, message_def.fields.len, allocator);
+                    return err;
+                };
                 offset += field_def.size;
             } else {
                 assert(field_def.size % field_def.type.packedSize() == 0);
                 const num_elements = field_def.size / field_def.type.packedSize();
-                fields[i].raw_value = try allocator.alloc(FieldValue, num_elements);
+                fields[i].raw_value = allocator.alloc(FieldValue, num_elements) catch |err| {
+                    cleanup(fields, message_def.fields.len, allocator);
+                    return err;
+                };
                 for (0..num_elements) |j| {
-                    fields[i].raw_value[j] = try FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator);
+                    fields[i].raw_value[j] = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator) catch |err| {
+                        cleanup(fields, message_def.fields.len, allocator);
+                        return err;
+                    };
                     offset += field_def.type.packedSize();
                 }
             }
@@ -266,7 +291,7 @@ fn computeCrc(payload: []const u8) u16 {
     return crc;
 }
 
-const Decoder = struct {
+pub const Decoder = struct {
     const max_message_defs = 16;
 
     protocol_version: u8,
@@ -308,7 +333,7 @@ const Decoder = struct {
         };
     }
 
-    fn readRecord(self: *Decoder) !?Message {
+    pub fn readRecord(self: *Decoder) !?Message {
         if (self.*.remaining_bytes == 0) {
             return error.EndOfPayload;
         }
