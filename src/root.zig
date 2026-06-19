@@ -166,6 +166,7 @@ const MessageDefinition = struct {
     fn deinit(self: MessageDefinition, allocator: std.mem.Allocator) void {
         allocator.free(self.fields);
     }
+
     pub fn fromReader(reader: *std.Io.Reader, allocator: std.mem.Allocator) !struct { usize, MessageDefinition } {
         const MessageByteOrder = enum(u8) {
             little_endian = 0,
@@ -349,13 +350,11 @@ pub const Decoder = struct {
             header_type: RecordHeaderType,
         };
         const record_header = try self.*.reader.takeStruct(RecordHeader, .little);
-        if (record_header.header_type != RecordHeaderType.normal) {
-            return error.NotImplemented;
-        }
         self.remaining_bytes -= 1;
 
         switch (record_header.message_type) {
             MessageType.definition => {
+                assert(record_header.header_type == RecordHeaderType.normal);
                 if (record_header.has_developer_fields) {
                     return error.NotImplemented;
                 }
@@ -371,6 +370,9 @@ pub const Decoder = struct {
                 const message_buffer = try self.*.reader.take(message_def.messageSize());
                 const message = try Message.fromBytes(message_def, message_buffer, self.*.allocator);
                 self.remaining_bytes -= message_def.messageSize();
+                if (record_header.header_type != RecordHeaderType.normal) {
+                    return error.NotImplemented;
+                }
                 return message;
             },
         }
