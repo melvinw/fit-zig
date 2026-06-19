@@ -163,6 +163,9 @@ const MessageDefinition = struct {
     byte_order: std.builtin.Endian,
     fields: []FieldDefinition,
 
+    fn deinit(self: MessageDefinition, allocator: std.mem.Allocator) void {
+        allocator.free(self.fields);
+    }
     pub fn fromReader(reader: *std.Io.Reader, allocator: std.mem.Allocator) !struct { usize, MessageDefinition } {
         const MessageByteOrder = enum(u8) {
             little_endian = 0,
@@ -303,8 +306,8 @@ pub const Decoder = struct {
 
     pub fn deinit(self: *Decoder) void {
         for (&self.*.message_definitions) |*optional_def| {
-            if (optional_def.*) |*def| {
-                self.*.allocator.free(def.*.fields);
+            if (optional_def.*) |def| {
+                def.deinit(self.allocator);
             }
         }
     }
@@ -358,6 +361,9 @@ pub const Decoder = struct {
                 }
                 const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator);
                 self.*.remaining_bytes -= bytes_read;
+                if (self.*.message_definitions[record_header.local_message_id]) |old_def| {
+                    old_def.deinit(self.allocator);
+                }
                 self.*.message_definitions[record_header.local_message_id] = definition;
             },
             MessageType.data => {
