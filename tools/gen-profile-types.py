@@ -168,14 +168,14 @@ class Field:
         indent = " " * 16
         print(f"{indent}{self.field_id} => {{")
         print(
-            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value[0]) == .{self.field_type});"
+            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value.scalar) == .{self.field_type});"
         )
         if self.scale or self.offset:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = try allocator.alloc(f32, rf.raw_value.len);"
+                    f"{indent}    msg.*.{self.name} = try allocator.alloc(f32, rf.raw_value.array.len);"
                 )
-                print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
+                print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
                 print(
                     f"{indent}        const f: f32 = @floatFromInt(raw_value.{self.field_type});"
                 )
@@ -185,7 +185,7 @@ class Field:
                 print(f"{indent}    }}")
             else:
                 print(
-                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value[0].{self.field_type});"
+                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value.scalar.{self.field_type});"
                 )
                 print(
                     f"{indent}    msg.*.{self.name} = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
@@ -193,20 +193,20 @@ class Field:
         else:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = try allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.len);"
+                    f"{indent}    msg.*.{self.name} = try allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.array.len);"
                 )
-                print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
+                print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
                 print(
                     f"{indent}        msg.*.{self.name}[i] = raw_value.{self.field_type};"
                 )
                 print(f"{indent}    }}")
             elif self.field_type == "string":
                 print(
-                    f"{indent}    msg.*.{self.name} = allocator.dupeSentinel(u8, rf.raw_value[0].{self.field_type}, 0);"
+                    f"{indent}    msg.*.{self.name} = allocator.dupeSentinel(u8, rf.raw_value.scalar.{self.field_type}, 0);"
                 )
             else:
                 print(
-                    f"{indent}    msg.*.{self.name} = rf.raw_value[0].{self.field_type};"
+                    f"{indent}    msg.*.{self.name} = rf.raw_value.scalar.{self.field_type};"
                 )
         print(f"{indent}}},")
 

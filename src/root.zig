@@ -206,14 +206,28 @@ const MessageDefinition = struct {
 };
 
 pub const FieldData = struct {
+    const Storage = enum {
+        scalar,
+        array,
+    };
+    const Value = union(Storage) {
+        scalar: FieldValue,
+        array: []FieldValue,
+    };
+
     id: u8,
-    raw_value: []FieldValue,
+    raw_value: Value,
 
     pub fn deinit(self: *FieldData, allocator: std.mem.Allocator) void {
-        for (self.*.raw_value) |value| {
-            value.deinit(allocator);
+        switch (self.*.raw_value) {
+            .array => |values| {
+                for (values) |value| {
+                    value.deinit(allocator);
+                }
+                allocator.free(values);
+            },
+            else => {},
         }
-        allocator.free(self.*.raw_value);
     }
 };
 
@@ -235,28 +249,32 @@ pub const Message = struct {
         for (message_def.fields, 0..) |field_def, i| {
             fields[i].id = field_def.id;
             if (field_def.type == .string) {
-                fields[i].raw_value = allocator.alloc(FieldValue, 1) catch |err| {
+                fields[i].raw_value = FieldData.Value{ .scalar = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator) catch |err| {
                     cleanup(fields, message_def.fields.len, allocator);
                     return err;
-                };
-                fields[i].raw_value[0] = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.size], message_def.byte_order, allocator) catch |err| {
-                    cleanup(fields, message_def.fields.len, allocator);
-                    return err;
-                };
+                } };
                 offset += field_def.size;
             } else {
                 assert(field_def.size % field_def.type.packedSize() == 0);
                 const num_elements = field_def.size / field_def.type.packedSize();
-                fields[i].raw_value = allocator.alloc(FieldValue, num_elements) catch |err| {
-                    cleanup(fields, message_def.fields.len, allocator);
-                    return err;
-                };
-                for (0..num_elements) |j| {
-                    fields[i].raw_value[j] = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator) catch |err| {
+                if (num_elements == 1) {
+                    fields[i].raw_value = FieldData.Value{ .scalar = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator) catch |err| {
                         cleanup(fields, message_def.fields.len, allocator);
                         return err;
-                    };
+                    } };
                     offset += field_def.type.packedSize();
+                } else {
+                    fields[i].raw_value = FieldData.Value{ .array = allocator.alloc(FieldValue, num_elements) catch |err| {
+                        cleanup(fields, message_def.fields.len, allocator);
+                        return err;
+                    } };
+                    for (0..num_elements) |j| {
+                        fields[i].raw_value.array[j] = FieldValue.fromBytes(field_def.type, buffer[offset .. offset + field_def.type.packedSize()], message_def.byte_order, allocator) catch |err| {
+                            cleanup(fields, message_def.fields.len, allocator);
+                            return err;
+                        };
+                        offset += field_def.type.packedSize();
+                    }
                 }
             }
         }
