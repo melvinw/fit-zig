@@ -22,7 +22,7 @@ const MessageType = enum(u1) {
     definition = 1,
 };
 
-const FieldType = enum(u8) {
+pub const FieldType = enum(u8) {
     enumeration = 0x00,
     sint8 = 0x01,
     uint8 = 0x02,
