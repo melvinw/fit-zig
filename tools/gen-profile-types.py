@@ -352,7 +352,7 @@ class Message:
             ", allocator: std.mem.Allocator" if self._need_allocator(types) else ""
         )
         print(
-            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []gnsslib.FieldData{alloc_param}) !void {{"
+            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []const gnsslib.FieldData{alloc_param}) !void {{"
         )
         # XXX: workaround to supress unushed param error until all field types
         # are handled. can be removed after that point.
