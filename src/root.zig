@@ -182,7 +182,7 @@ const MessageDefinition = struct {
             field.*.size = try reader.takeByte();
             field.*.type = @enumFromInt(try reader.takeByte() & ~@as(u8, 0b1000_0000));
         }
-        return .{ fields.len * 3 + @bitSizeOf(DefinitionHeader) * 8, MessageDefinition{
+        return .{ fields.len * 3 + @bitSizeOf(DefinitionHeader) / 8, MessageDefinition{
             .global_id = header.global_id,
             .byte_order = switch (header.byte_order) {
                 MessageByteOrder.little_endian => .little,
