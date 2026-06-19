@@ -168,26 +168,32 @@ class Field:
         indent = " " * 16
         print(f"{indent}{self.field_id} => {{")
         print(
-            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value) == .{self.field_type});"
+            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value[0]) == .{self.field_type});"
         )
         if self.scale or self.offset:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = allocator.alloc(f32, rf.raw_value.len);"
+                    f"{indent}    msg.*.{self.name} = try allocator.alloc(f32, rf.raw_value.len);"
                 )
                 print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
                 print(
-                    f"{indent}        msg.*.{self.name}[i] = (@as(f32, raw_value.{self.field_type}) / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                    f"{indent}        const f: f32 = @floatFromInt(raw_value.{self.field_type});"
+                )
+                print(
+                    f"{indent}        msg.*.{self.name}.?[i] = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
                 )
                 print(f"{indent}    }}")
             else:
                 print(
-                    f"{indent}    msg.*.{self.name} = (@as(f32, rf.raw_value.{self.field_type}) / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value[0].{self.field_type});"
+                )
+                print(
+                    f"{indent}    msg.*.{self.name} = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
                 )
         else:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.len);"
+                    f"{indent}    msg.*.{self.name} = try allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.len);"
                 )
                 print(f"{indent}    for (rf.raw_value,0..) |raw_value, i| {{")
                 print(
@@ -350,11 +356,12 @@ class Message:
         )
         # XXX: workaround to supress unushed param error until all field types
         # are handled. can be removed after that point.
-        print("        msg.* = {};")
+        print("        msg.* = undefined;")
         print("        for (raw_fields) |rf| {")
         print("            switch (rf.id) {")
         for field in self.fields:
             field.render_constructor_case(types)
+        print("                else => { },")
         print("            }")
         print("        }")
         print("    }")
