@@ -214,7 +214,9 @@ class Field:
         if not self.needs_allocator():
             return
 
-        print(f"        allocator.free(msg.*.{self.name});")
+        print(
+            f"        if (msg.{self.name} != null and msg.{self.name}.?.len > 0) {{ allocator.free(msg.{self.name}.?); }}"
+        )
 
     def needs_allocator(self):
         return self.field_type == "string" or self.is_array
