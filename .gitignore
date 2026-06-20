@@ -41,3 +41,4 @@ tags
 
 /venv/
 /src/gen/
+_tmp/
