@@ -389,7 +389,7 @@ pub const Decoder = struct {
                 const message_size = message_def.messageSize();
                 self.remaining_bytes -= message_size;
                 if (message_filter != null and !message_filter.?(message_def.global_id)) {
-                    self.*.reader.toss(message_size);
+                    try self.*.reader.discardAll(message_size);
                     return null;
                 }
                 const message_buffer = try self.*.reader.take(message_size);
