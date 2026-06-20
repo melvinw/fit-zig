@@ -18,6 +18,10 @@ fn semis2deg(semis: i32) f64 {
     return result * factor;
 }
 
+fn recordFilter(message_id: u16) bool {
+    return message_id == @intFromEnum(profile.MesgNum.record);
+}
+
 pub fn main(init: std.process.Init) !void {
     var args = init.minimal.args.iterate();
     _ = args.next(); // skip program name
@@ -39,23 +43,22 @@ pub fn main(init: std.process.Init) !void {
         const allocator = std.heap.c_allocator;
         var decoder = try gnsslib.Decoder.fromReader(&fr.interface, allocator);
         defer decoder.deinit();
-        while (decoder.readRecord()) |message| {
+        while (decoder.readRecord(recordFilter)) |message| {
             if (message == null) {
                 continue;
             }
-            if (message.?.global_id == @intFromEnum(profile.MesgNum.record)) {
-                var record: profile.RecordMessage = undefined;
-                try record.fromRawFields(message.?.fields, allocator);
-                const timestamp = try garmin_epoch.shiftSeconds(record.timestamp.?).formatISO8601(allocator, true);
-                defer allocator.free(timestamp);
-                try stdout.print("      <trkpt lat=\"{}\" lon=\"{}\">\n", .{
-                    semis2deg(record.position_lat.?),
-                    semis2deg(record.position_long.?),
-                });
-                try stdout.print("        <ele>{}</ele>\n", .{record.enhanced_altitude.?});
-                try stdout.print("        <time>{s}</time>\n", .{timestamp});
-                try stdout.writeAll("      </trkpt>\n");
-            }
+            assert(message.?.global_id == @intFromEnum(profile.MesgNum.record));
+            var record: profile.RecordMessage = undefined;
+            try record.fromRawFields(message.?.fields, allocator);
+            const timestamp = try garmin_epoch.shiftSeconds(record.timestamp.?).formatISO8601(allocator, true);
+            defer allocator.free(timestamp);
+            try stdout.print("      <trkpt lat=\"{}\" lon=\"{}\">\n", .{
+                semis2deg(record.position_lat.?),
+                semis2deg(record.position_long.?),
+            });
+            try stdout.print("        <ele>{}</ele>\n", .{record.enhanced_altitude.?});
+            try stdout.print("        <time>{s}</time>\n", .{timestamp});
+            try stdout.writeAll("      </trkpt>\n");
             defer message.?.deinit(allocator);
         } else |err| {
             assert(err == gnsslib.DecodeError.EndOfPayload or err == gnsslib.DecodeError.NotImplemented);

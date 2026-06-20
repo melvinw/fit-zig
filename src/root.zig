@@ -355,7 +355,7 @@ pub const Decoder = struct {
         };
     }
 
-    pub fn readRecord(self: *Decoder) !?Message {
+    pub fn readRecord(self: *Decoder, message_filter: ?fn (u16) bool) !?Message {
         if (self.*.remaining_bytes == 0) {
             return error.EndOfPayload;
         }
@@ -385,9 +385,14 @@ pub const Decoder = struct {
             },
             MessageType.data => {
                 const message_def = self.*.message_definitions[record_header.local_message_id].?;
-                const message_buffer = try self.*.reader.take(message_def.messageSize());
+                const message_size = message_def.messageSize();
+                self.remaining_bytes -= message_size;
+                if (message_filter != null and !message_filter.?(message_def.global_id)) {
+                    self.*.reader.toss(message_size);
+                    return null;
+                }
+                const message_buffer = try self.*.reader.take(message_size);
                 const message = try Message.fromBytes(message_def, message_buffer, self.*.allocator);
-                self.remaining_bytes -= message_def.messageSize();
                 if (record_header.header_type != RecordHeaderType.normal) {
                     return error.NotImplemented;
                 }
