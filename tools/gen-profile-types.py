@@ -289,12 +289,15 @@ class Message:
             )
         ]
 
+        # XXX: see _fit_to_zig
+        field_type = "uint32" if "date_time" in row.field_type else row.field_type
+
         if len(row.field_id) > 0:
             self.fields.append(
                 Field(
                     field_id=int(row.field_id),
                     name=row.field_name,
-                    field_type=row.field_type,
+                    field_type=field_type,
                     is_array=len(row.array) > 0,
                     comment=row.comment,
                     scale=(
@@ -317,7 +320,7 @@ class Message:
             last_field.subfields.append(
                 SubField(
                     name=row.field_name,
-                    field_type=row.field_type,
+                    field_type=field_type,
                     components=components,
                 )
             )
