@@ -359,7 +359,7 @@ class Message:
         )
         # XXX: workaround to supress unushed param error until all field types
         # are handled. can be removed after that point.
-        print("        msg.* = undefined;")
+        print("        msg.* = .{};")
         print("        for (raw_fields) |rf| {")
         print("            switch (rf.id) {")
         for field in self.fields:
