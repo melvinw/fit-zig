@@ -120,6 +120,9 @@ class SubField:
     components: list[Component]
 
 
+WONKY_FIELDS = frozenset({"compressed_speed_distance"})
+
+
 @dataclass
 class Field:
     field_id: int
@@ -134,8 +137,9 @@ class Field:
     subfields: list[SubField]
 
     def render_def(self, types: dict):
-        if len(self.components) > 0 or len(self.subfields) > 0:
-            # ignore subfields and components for now.
+        # XXX: generate code for components
+        if self.name in WONKY_FIELDS or len(self.subfields) > 0:
+            # XXX: ignore subfields for now.
             return
 
         zig_type = (
@@ -151,15 +155,25 @@ class Field:
         print(f"    {self.name}: ?{zig_type} = null,")
 
     def render_constructor_case(self, types: dict):
-        if len(self.components) > 0 or len(self.subfields) > 0:
-            # ignore subfields and components for now.
+        # XXX: generate code for components
+        if self.name in WONKY_FIELDS or len(self.subfields) > 0:
+            # XXX: ignore subfields for now.
             return
 
         zig_type = (
             "f32" if self.scale is not None else _fit_to_zig(self.field_type, types)
         )
 
-        if self.field_type in types or self.field_type == "bool":
+        underlying_fit_type = self.field_type
+        if self.field_type in types:
+            t = types[self.field_type]
+            assert isinstance(t, Enum)
+            underlying_fit_type = t.base_type
+
+        if underlying_fit_type == "enum":
+            underlying_fit_type = "enumeration"
+
+        if underlying_fit_type == "bool":
             # TODO
             # NOTE: bool is not considered a base type. probably implemented as
             # an enum. needs special handling.
@@ -168,8 +182,9 @@ class Field:
         indent = " " * 16
         print(f"{indent}{self.field_id} => {{")
         print(
-            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value.scalar) == .{self.field_type});"
+            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value.scalar) == .{underlying_fit_type});"
         )
+
         if self.scale or self.offset:
             if self.is_array:
                 print(
@@ -177,7 +192,7 @@ class Field:
                 )
                 print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
                 print(
-                    f"{indent}        const f: f32 = @floatFromInt(raw_value.{self.field_type});"
+                    f"{indent}        const f: f32 = @floatFromInt(raw_value.{underlying_fit_type});"
                 )
                 print(
                     f"{indent}        msg.*.{self.name}.?[i] = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
@@ -185,7 +200,7 @@ class Field:
                 print(f"{indent}    }}")
             else:
                 print(
-                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value.scalar.{self.field_type});"
+                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value.scalar.{underlying_fit_type});"
                 )
                 print(
                     f"{indent}    msg.*.{self.name} = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
@@ -197,16 +212,20 @@ class Field:
                 )
                 print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
                 print(
-                    f"{indent}        msg.*.{self.name}[i] = raw_value.{self.field_type};"
+                    f"{indent}        msg.*.{self.name}[i] = raw_value.{underlying_fit_type};"
                 )
                 print(f"{indent}    }}")
-            elif self.field_type == "string":
+            elif underlying_fit_type == "string":
                 print(
-                    f"{indent}    msg.*.{self.name} = allocator.dupeSentinel(u8, rf.raw_value.scalar.{self.field_type}, 0);"
+                    f"{indent}    msg.*.{self.name} = try allocator.dupeSentinel(u8, rf.raw_value.scalar.{underlying_fit_type}, 0);"
+                )
+            elif underlying_fit_type != self.field_type:
+                print(
+                    f"{indent}    msg.*.{self.name} = @enumFromInt(rf.raw_value.scalar.{underlying_fit_type});"
                 )
             else:
                 print(
-                    f"{indent}    msg.*.{self.name} = rf.raw_value.scalar.{self.field_type};"
+                    f"{indent}    msg.*.{self.name} = rf.raw_value.scalar.{underlying_fit_type};"
                 )
         print(f"{indent}}},")
 
@@ -224,7 +243,6 @@ class Field:
     def ignored(self, types: dict):
         return any(
             (
-                self.field_type in types,
                 self.field_type == "bool",
                 len(self.components) > 0,
                 len(self.subfields) > 0,
