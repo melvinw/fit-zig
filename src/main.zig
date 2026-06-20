@@ -19,7 +19,8 @@ fn semis2deg(semis: i32) f64 {
 }
 
 fn recordFilter(message_id: u16) bool {
-    return message_id == @intFromEnum(profile.MesgNum.record);
+    return message_id == @intFromEnum(profile.MesgNum.record) or
+        message_id == @intFromEnum(profile.MesgNum.file_id);
 }
 
 pub fn main(init: std.process.Init) !void {
@@ -34,7 +35,7 @@ pub fn main(init: std.process.Init) !void {
     try stdout.writeAll("  <trk>\n");
     while (args.next()) |fit_path| {
         const file = try std.Io.Dir.openFileAbsolute(init.io, fit_path, .{ .mode = .read_only });
-        std.debug.print("Reading {s}\n", .{fit_path});
+        std.debug.print("Reading {s} ({} bytes)\n", .{ fit_path, try file.length(init.io) });
         try stdout.writeAll("    <trkseg>\n");
         // Don't forget to close the file at the end.
         defer file.close(init.io);
@@ -43,10 +44,23 @@ pub fn main(init: std.process.Init) !void {
         const allocator = std.heap.c_allocator;
         var decoder = try gnsslib.Decoder.fromReader(&fr.interface, allocator);
         defer decoder.deinit();
+        var file_type: ?profile.File = null;
         while (decoder.readRecord(recordFilter)) |message| {
             if (message == null) {
                 continue;
             }
+
+            if (message.?.global_id == @intFromEnum(profile.MesgNum.file_id)) {
+                var file_id: profile.FileIdMessage = undefined;
+                try file_id.fromRawFields(message.?.fields, allocator);
+                file_type = file_id.type.?;
+                file_id.deinit(allocator);
+                continue;
+            }
+
+            // Every file must include a FileID message.
+            assert(file_type != null);
+
             assert(message.?.global_id == @intFromEnum(profile.MesgNum.record));
             var record: profile.RecordMessage = undefined;
             try record.fromRawFields(message.?.fields, allocator);
@@ -56,8 +70,11 @@ pub fn main(init: std.process.Init) !void {
                 semis2deg(record.position_lat.?),
                 semis2deg(record.position_long.?),
             });
-            try stdout.print("        <ele>{}</ele>\n", .{record.enhanced_altitude.?});
-            try stdout.print("        <time>{s}</time>\n", .{timestamp});
+            try stdout.print("        <ele>{}</ele>\n", .{record.altitude orelse record.enhanced_altitude.?});
+            // Don't include time for course files.
+            if (file_type == profile.File.activity) {
+                try stdout.print("        <time>{s}</time>\n", .{timestamp});
+            }
             try stdout.writeAll("      </trkpt>\n");
             defer message.?.deinit(allocator);
         } else |err| {
