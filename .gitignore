@@ -40,5 +40,4 @@ tags
 [._]*.un~
 
 /venv/
-/src/gen/
 _tmp/
