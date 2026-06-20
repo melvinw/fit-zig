@@ -182,7 +182,7 @@ class Field:
         indent = " " * 16
         print(f"{indent}{self.field_id} => {{")
         print(
-            f"{indent}    assert(@as(gnsslib.FieldType, rf.raw_value.scalar) == .{underlying_fit_type});"
+            f"{indent}    assert(@as(decoder.FieldType, rf.raw_value.scalar) == .{underlying_fit_type});"
         )
 
         if self.scale or self.offset:
@@ -375,7 +375,7 @@ class Message:
             ", allocator: std.mem.Allocator" if self._need_allocator(types) else ""
         )
         print(
-            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []const gnsslib.FieldData{alloc_param}) !void {{"
+            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []const decoder.FieldData{alloc_param}) !void {{"
         )
         # XXX: workaround to supress unushed param error until all field types
         # are handled. can be removed after that point.
@@ -434,7 +434,7 @@ if __name__ == "__main__":
     print("//! This file was generated from a FIT profile. Do not edit by hand.")
     print(f"//! Instead, run this command: '{cmd}'")
     print('const std = @import("std");')
-    print(f'const gnsslib = @import("gnsslib");')
+    print(f'const decoder = @import("../decoder.zig");')
     print("const assert = std.debug.assert;")
     types = {}
     for path in sys.argv[1:]:

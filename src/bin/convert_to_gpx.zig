@@ -1,22 +1,9 @@
 const std = @import("std");
 const assert = std.debug.assert;
 
-const gnsslib = @import("gnsslib");
-const profile = @import("gen/profile.zig");
-const datetime = @import("datetime").datetime;
-const timezones = @import("datetime").timezones;
-
-const garmin_epoch = datetime.Datetime{
-    .date = datetime.Date{ .year = 1989, .month = 12, .day = 31 },
-    .time = datetime.Time{ .hour = 0, .minute = 0, .second = 0, .nanosecond = 0 },
-    .zone = timezones.UTC,
-};
-
-fn semis2deg(semis: i32) f64 {
-    const factor: f64 = 180.0 / std.math.pow(f64, 2, 31);
-    const result: f64 = @floatFromInt(semis);
-    return result * factor;
-}
+const fitlib = @import("fitlib");
+const profile = fitlib.profile;
+const helpers = fitlib.helpers;
 
 fn recordFilter(message_id: u16) bool {
     return message_id == @intFromEnum(profile.MesgNum.record) or
@@ -42,7 +29,7 @@ pub fn main(init: std.process.Init) !void {
 
         var fr = file.reader(init.io, &read_buffer);
         const allocator = std.heap.c_allocator;
-        var decoder = try gnsslib.Decoder.fromReader(&fr.interface, allocator);
+        var decoder = try fitlib.Decoder.fromReader(&fr.interface, allocator);
         defer decoder.deinit();
         var file_type: ?profile.File = null;
         while (decoder.readRecord(recordFilter)) |message| {
@@ -64,11 +51,11 @@ pub fn main(init: std.process.Init) !void {
             assert(message.?.global_id == @intFromEnum(profile.MesgNum.record));
             var record: profile.RecordMessage = undefined;
             try record.fromRawFields(message.?.fields, allocator);
-            const timestamp = try garmin_epoch.shiftSeconds(record.timestamp.?).formatISO8601(allocator, true);
+            const timestamp = try helpers.toIso8601(record.timestamp.?, allocator);
             defer allocator.free(timestamp);
             try stdout.print("      <trkpt lat=\"{}\" lon=\"{}\">\n", .{
-                semis2deg(record.position_lat.?),
-                semis2deg(record.position_long.?),
+                helpers.semis2deg(record.position_lat.?),
+                helpers.semis2deg(record.position_long.?),
             });
             try stdout.print("        <ele>{}</ele>\n", .{record.altitude orelse record.enhanced_altitude.?});
             // Don't include time for course files.
@@ -78,7 +65,7 @@ pub fn main(init: std.process.Init) !void {
             try stdout.writeAll("      </trkpt>\n");
             defer message.?.deinit(allocator);
         } else |err| {
-            assert(err == gnsslib.DecodeError.EndOfPayload or err == gnsslib.DecodeError.NotImplemented);
+            assert(err == fitlib.DecodeError.EndOfPayload or err == fitlib.DecodeError.NotImplemented);
         }
         try stdout.writeAll("    </trkseg>\n");
         try stdout.flush();
