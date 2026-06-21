@@ -157,16 +157,24 @@ const FieldDefinition = packed struct(u24) {
     type: FieldType,
 };
 
+const DeveloperFieldDefinition = packed struct(u24) {
+    id: u8,
+    size: u8,
+    developer_index: u8,
+};
+
 const MessageDefinition = struct {
     global_id: u16,
     byte_order: std.builtin.Endian,
     fields: []FieldDefinition,
+    developer_fields: []DeveloperFieldDefinition,
 
     fn deinit(self: MessageDefinition, allocator: std.mem.Allocator) void {
         allocator.free(self.fields);
+        allocator.free(self.developer_fields);
     }
 
-    pub fn fromReader(reader: *std.Io.Reader, allocator: std.mem.Allocator) !struct { usize, MessageDefinition } {
+    pub fn fromReader(reader: *std.Io.Reader, allocator: std.mem.Allocator, has_developer_fields: bool) !struct { usize, MessageDefinition } {
         const MessageByteOrder = enum(u8) {
             little_endian = 0,
             big_endian = 1,
@@ -180,25 +188,43 @@ const MessageDefinition = struct {
 
         const header = try reader.takeStruct(DefinitionHeader, .little);
         const fields = try allocator.alloc(FieldDefinition, header.num_fields);
+        var developer_fields: []DeveloperFieldDefinition = &.{};
         for (fields) |*field| {
             field.*.id = try reader.takeByte();
             field.*.size = try reader.takeByte();
             field.*.type = @enumFromInt(try reader.takeByte() & ~@as(u8, 0b1000_0000));
         }
+        var developer_bytes: usize = 0;
+        if (has_developer_fields) {
+            const num_developer_fields = try reader.takeByte();
+            if (num_developer_fields > 0) {
+                developer_fields = try allocator.alloc(DeveloperFieldDefinition, num_developer_fields);
+                for (developer_fields) |*field| {
+                    field.*.id = try reader.takeByte();
+                    field.*.size = try reader.takeByte();
+                    field.*.developer_index = try reader.takeByte();
+                }
+            }
+            developer_bytes = 1 + num_developer_fields * 3;
+        }
         const byte_order: std.builtin.Endian = switch (header.byte_order) {
             MessageByteOrder.little_endian => .little,
             MessageByteOrder.big_endian => .big,
         };
-        return .{ fields.len * 3 + @bitSizeOf(DefinitionHeader) / 8, MessageDefinition{
+        return .{ developer_bytes + fields.len * 3 + @bitSizeOf(DefinitionHeader) / 8, MessageDefinition{
             .global_id = std.mem.toNative(u16, header.global_id, byte_order),
             .byte_order = byte_order,
             .fields = fields,
+            .developer_fields = developer_fields,
         } };
     }
 
     pub fn messageSize(self: MessageDefinition) usize {
         var bytes_read: usize = 0;
         for (self.fields) |field_def| {
+            bytes_read += field_def.size;
+        }
+        for (self.developer_fields) |field_def| {
             bytes_read += field_def.size;
         }
         return bytes_read;
@@ -373,10 +399,7 @@ pub const Decoder = struct {
         switch (record_header.message_type) {
             MessageType.definition => {
                 assert(record_header.header_type == RecordHeaderType.normal);
-                if (record_header.has_developer_fields) {
-                    return error.NotImplemented;
-                }
-                const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator);
+                const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator, record_header.has_developer_fields);
                 self.*.remaining_bytes -= bytes_read;
                 if (self.*.message_definitions[record_header.local_message_id]) |old_def| {
                     old_def.deinit(self.allocator);
