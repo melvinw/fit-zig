@@ -386,28 +386,51 @@ pub const Decoder = struct {
             return error.EndOfPayload;
         }
 
-        const RecordHeader = packed struct(u8) {
+        const NormalRecordHeader = packed struct(u7) {
             local_message_id: u4,
             has_developer_fields: bool, // only set for definition records
             reserved: u1,
             message_type: MessageType,
-            header_type: RecordHeaderType,
+        };
+        const CompressedTimestampHeader = packed struct(u7) {
+            timestamp_delta: u5,
+            local_message_id: u2,
+        };
+        const RecordHeader = packed struct(u8) {
+            others: packed union {
+                normal: NormalRecordHeader,
+                compressed_timestamp: CompressedTimestampHeader,
+            },
+            type: RecordHeaderType,
+
+            fn local_message_id(header: @This()) u4 {
+                return switch (header.type) {
+                    .normal => return header.others.normal.local_message_id,
+                    .compressed_timestamp => return header.others.compressed_timestamp.local_message_id,
+                };
+            }
+
+            fn message_type(header: @This()) MessageType {
+                return switch (header.type) {
+                    .normal => return header.others.normal.message_type,
+                    .compressed_timestamp => return MessageType.data,
+                };
+            }
         };
         const record_header = try self.*.reader.takeStruct(RecordHeader, .little);
         self.remaining_bytes -= 1;
 
-        switch (record_header.message_type) {
+        switch (record_header.message_type()) {
             MessageType.definition => {
-                assert(record_header.header_type == RecordHeaderType.normal);
-                const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator, record_header.has_developer_fields);
+                const bytes_read, const definition = try MessageDefinition.fromReader(self.*.reader, self.*.allocator, record_header.others.normal.has_developer_fields);
                 self.*.remaining_bytes -= bytes_read;
-                if (self.*.message_definitions[record_header.local_message_id]) |old_def| {
+                if (self.*.message_definitions[record_header.local_message_id()]) |old_def| {
                     old_def.deinit(self.allocator);
                 }
-                self.*.message_definitions[record_header.local_message_id] = definition;
+                self.*.message_definitions[record_header.local_message_id()] = definition;
             },
             MessageType.data => {
-                const message_def = self.*.message_definitions[record_header.local_message_id].?;
+                const message_def = self.*.message_definitions[record_header.local_message_id()].?;
                 const message_size = message_def.messageSize();
                 self.remaining_bytes -= message_size;
                 if (message_filter != null and !message_filter.?(message_def.global_id)) {
@@ -416,7 +439,7 @@ pub const Decoder = struct {
                 }
                 const message_buffer = try self.*.reader.take(message_size);
                 const message = try Message.fromBytes(message_def, message_buffer, self.*.allocator);
-                if (record_header.header_type != RecordHeaderType.normal) {
+                if (record_header.type != RecordHeaderType.normal) {
                     return error.NotImplemented;
                 }
                 return message;
