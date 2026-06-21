@@ -388,8 +388,8 @@ pub const Decoder = struct {
 
         const NormalRecordHeader = packed struct(u7) {
             local_message_id: u4,
-            has_developer_fields: bool, // only set for definition records
             reserved: u1,
+            has_developer_fields: bool, // only set for definition records
             message_type: MessageType,
         };
         const CompressedTimestampHeader = packed struct(u7) {
