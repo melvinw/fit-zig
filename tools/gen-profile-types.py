@@ -167,16 +167,25 @@ class Field:
         if self.is_array and self.field_type != "string":
             zig_type = f"[]{zig_type}"
 
+        alloc_param = ", allocator: std.mem.Allocator" if self.needs_allocator() else ""
+
         if len(self.comment) > 0:
             print(f"    /// {self.comment}")
 
         print(
-            f"    pub fn get{_snake_to_pascal(self.name)}(msg: {parent_type}) ?{zig_type} {{"
+            f"    pub fn get{_snake_to_pascal(self.name)}(msg: {parent_type}{alloc_param}) ?{zig_type} {{"
         )
-        print(f"        return msg.{self.name};")
-        print(f"    }}")
+        print(f"        var rf: ?*const decoder.FieldData = null;")
+        print("        for (msg.raw_fields) |raw_field| {")
+        print(f"            if (raw_field.id == {self.field_id}) {{")
+        print("                rf = &raw_field;")
+        print("                break;")
+        print("            }")
+        print("        }")
+        print("        if (rf == null) {")
+        print("            return null;")
+        print("        }")
 
-    def render_constructor_case(self, types: dict):
         # XXX: generate code for components
         if self.name in WONKY_FIELDS or len(self.subfields) > 0:
             # XXX: ignore subfields for now.
@@ -199,65 +208,60 @@ class Field:
             # TODO
             # NOTE: bool is not considered a base type. probably implemented as
             # an enum. needs special handling.
+            print("        return null;")
+            print("    }")
             return
 
-        indent = " " * 16
-        print(f"{indent}{self.field_id} => {{")
         print(
-            f"{indent}    assert(@as(decoder.FieldType, rf.raw_value.scalar) == .{underlying_fit_type});"
+            f"        assert(@as(decoder.FieldType, rf.?.*.raw_value.scalar) == .{underlying_fit_type});"
         )
 
         if self.scale or self.offset:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = try allocator.alloc(f32, rf.raw_value.array.len);"
+                    f"        var ret = try allocator.alloc(f32, rf.?.*.raw_value.array.len);"
                 )
-                print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
+                print(f"        for (rf.?.*.raw_value.array,0..) |raw_value, i| {{")
                 print(
-                    f"{indent}        const f: f32 = @floatFromInt(raw_value.{underlying_fit_type});"
+                    f"            const f: f32 = @floatFromInt(raw_value.{underlying_fit_type});"
                 )
                 print(
-                    f"{indent}        msg.*.{self.name}.?[i] = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                    f"            ret[i] = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
                 )
-                print(f"{indent}    }}")
+                print("        }")
+                print("        return ret;")
             else:
                 print(
-                    f"{indent}    const f: f32 = @floatFromInt(rf.raw_value.scalar.{underlying_fit_type});"
+                    f"        const f: f32 = @floatFromInt(rf.?.*.raw_value.scalar.{underlying_fit_type});"
                 )
                 print(
-                    f"{indent}    msg.*.{self.name} = (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
+                    f"        return (f / {self.scale if self.scale is not None else 1.0}) - {self.offset if self.offset is not None else 0};"
                 )
         else:
             if self.is_array:
                 print(
-                    f"{indent}    msg.*.{self.name} = try allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.raw_value.array.len);"
+                    f"        var ret = try allocator.alloc({_fit_to_zig(self.field_type, types)}, rf.?.*.raw_value.array.len);"
                 )
-                print(f"{indent}    for (rf.raw_value.array,0..) |raw_value, i| {{")
+                print(f"        for (rf.?.*.raw_value.array,0..) |raw_value, i| {{")
                 print(
-                    f"{indent}        msg.*.{self.name}[i] = raw_value.{underlying_fit_type};"
+                    f"            ret[i] = raw_value.{underlying_fit_type};"
                 )
-                print(f"{indent}    }}")
+                print("        }")
+                print("        return ret;")
             elif underlying_fit_type == "string":
                 print(
-                    f"{indent}    msg.*.{self.name} = try allocator.dupeSentinel(u8, rf.raw_value.scalar.{underlying_fit_type}, 0);"
+                    f"        return try allocator.dupeSentinel(u8, rf.?.*.raw_value.scalar.{underlying_fit_type}, 0);"
                 )
             elif underlying_fit_type != self.field_type:
                 print(
-                    f"{indent}    msg.*.{self.name} = @enumFromInt(rf.raw_value.scalar.{underlying_fit_type});"
+                    f"        return @enumFromInt(rf.?.*.raw_value.scalar.{underlying_fit_type});"
                 )
             else:
                 print(
-                    f"{indent}    msg.*.{self.name} = rf.raw_value.scalar.{underlying_fit_type};"
+                    f"       return rf.?.*.raw_value.scalar.{underlying_fit_type};"
                 )
-        print(f"{indent}}},")
 
-    def render_deinit(self):
-        if not self.needs_allocator():
-            return
-
-        print(
-            f"        if (msg.{self.name} != null and msg.{self.name}.?.len > 0) {{ allocator.free(msg.{self.name}.?); }}"
-        )
+        print("    }")
 
     def needs_allocator(self):
         return self.field_type == "string" or self.is_array
@@ -373,13 +377,10 @@ class Message:
             print(f"/// {self.comment}")
 
         print(f"pub const {zig_name} = struct {{")
-        self._render_field_defs(types)
+        print(f"    raw_fields: []const decoder.FieldData,\n")
         self._render_getters(types)
         print()
         self._render_constructor(types)
-        print()
-        if self._need_allocator(types):
-            self._render_deinit()
         print("};")
 
     def _need_allocator(self, types: dict):
@@ -399,31 +400,10 @@ class Message:
 
     def _render_constructor(self, types: dict):
         zig_name = _snake_to_pascal(self.name)
-        alloc_param = (
-            ", allocator: std.mem.Allocator" if self._need_allocator(types) else ""
-        )
         print(
-            f"    pub fn fromRawFields(msg: *{zig_name}, raw_fields: []const decoder.FieldData{alloc_param}) !void {{"
+            f"    pub fn fromRawFields(raw_fields: []const decoder.FieldData) {zig_name} {{"
         )
-        # XXX: workaround to supress unushed param error until all field types
-        # are handled. can be removed after that point.
-        print("        msg.* = .{};")
-        print("        for (raw_fields) |rf| {")
-        print("            switch (rf.id) {")
-        for field in self.fields:
-            field.render_constructor_case(types)
-        print("                else => { },")
-        print("            }")
-        print("        }")
-        print("    }")
-
-    def _render_deinit(self):
-        zig_name = _snake_to_pascal(self.name)
-        print(
-            f"    pub fn deinit(msg: {zig_name}, allocator: std.mem.Allocator) void {{"
-        )
-        for field in self.fields:
-            field.render_deinit()
+        print(f"       return {zig_name}{{.raw_fields=raw_fields}};")
         print("    }")
 
 

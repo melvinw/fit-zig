@@ -38,10 +38,8 @@ pub fn main(init: std.process.Init) !void {
             }
 
             if (message.?.global_id == @intFromEnum(profile.MesgNum.file_id)) {
-                var file_id: profile.FileIdMessage = undefined;
-                try file_id.fromRawFields(message.?.fields, allocator);
+                const file_id = profile.FileIdMessage.fromRawFields(message.?.fields);
                 file_type = file_id.getType().?;
-                file_id.deinit(allocator);
                 continue;
             }
 
@@ -49,8 +47,7 @@ pub fn main(init: std.process.Init) !void {
             assert(file_type != null);
 
             assert(message.?.global_id == @intFromEnum(profile.MesgNum.record));
-            var record: profile.RecordMessage = undefined;
-            try record.fromRawFields(message.?.fields, allocator);
+            const record = profile.RecordMessage.fromRawFields(message.?.fields);
             const timestamp = try helpers.toIso8601(record.getTimestamp().?, allocator);
             defer allocator.free(timestamp);
             try stdout.print("      <trkpt lat=\"{}\" lon=\"{}\">\n", .{
@@ -63,7 +60,6 @@ pub fn main(init: std.process.Init) !void {
                 try stdout.print("        <time>{s}</time>\n", .{timestamp});
             }
             try stdout.writeAll("      </trkpt>\n");
-            defer message.?.deinit(allocator);
         } else |err| {
             assert(err == fitlib.DecodeError.EndOfPayload or err == fitlib.DecodeError.NotImplemented);
         }
