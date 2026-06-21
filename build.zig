@@ -38,6 +38,20 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(convert_to_gpx);
 
+    const dump = b.addExecutable(.{
+        .name = "dump",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/bin/dump.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "fitlib", .module = mod },
+            },
+        }),
+    });
+
+    b.installArtifact(dump);
+
     const mod_tests = b.addTest(.{
         .root_module = mod,
     });
