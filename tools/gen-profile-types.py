@@ -154,6 +154,28 @@ class Field:
 
         print(f"    {self.name}: ?{zig_type} = null,")
 
+    def render_getter(self, parent_type: str, types: dict):
+        # XXX: generate code for components
+        if self.name in WONKY_FIELDS or len(self.subfields) > 0:
+            # XXX: ignore subfields for now.
+            return
+
+        zig_type = (
+            "f32" if self.scale is not None else _fit_to_zig(self.field_type, types)
+        )
+
+        if self.is_array and self.field_type != "string":
+            zig_type = f"[]{zig_type}"
+
+        if len(self.comment) > 0:
+            print(f"    /// {self.comment}")
+
+        print(
+            f"    pub fn get{_snake_to_pascal(self.name)}(msg: {parent_type}) ?{zig_type} {{"
+        )
+        print(f"        return msg.{self.name};")
+        print(f"    }}")
+
     def render_constructor_case(self, types: dict):
         # XXX: generate code for components
         if self.name in WONKY_FIELDS or len(self.subfields) > 0:
@@ -352,6 +374,7 @@ class Message:
 
         print(f"pub const {zig_name} = struct {{")
         self._render_field_defs(types)
+        self._render_getters(types)
         print()
         self._render_constructor(types)
         print()
@@ -368,6 +391,11 @@ class Message:
     def _render_field_defs(self, types: dict):
         for field in self.fields:
             field.render_def(types)
+
+    def _render_getters(self, types: dict):
+        for field in self.fields:
+            print()
+            field.render_getter(_snake_to_pascal(self.name), types)
 
     def _render_constructor(self, types: dict):
         zig_name = _snake_to_pascal(self.name)

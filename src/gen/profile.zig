@@ -5446,6 +5446,33 @@ pub const FileIdMessage = struct {
     /// Optional free form string to indicate the devices name or model
     product_name: ?[:0]u8 = null,
 
+    pub fn getType(msg: FileIdMessage) ?File {
+        return msg.type;
+    }
+
+    pub fn getManufacturer(msg: FileIdMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
+    pub fn getSerialNumber(msg: FileIdMessage) ?u32 {
+        return msg.serial_number;
+    }
+
+    /// Only set for files that are can be created/erased.
+    pub fn getTimeCreated(msg: FileIdMessage) ?u32 {
+        return msg.time_created;
+    }
+
+    /// Only set for files that are not created/erased.
+    pub fn getNumber(msg: FileIdMessage) ?u16 {
+        return msg.number;
+    }
+
+    /// Optional free form string to indicate the devices name or model
+    pub fn getProductName(msg: FileIdMessage) ?[:0]u8 {
+        return msg.product_name;
+    }
+
     pub fn fromRawFields(msg: *FileIdMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5490,6 +5517,14 @@ pub const FileCreatorMessage = struct {
     software_version: ?u16 = null,
     hardware_version: ?u8 = null,
 
+    pub fn getSoftwareVersion(msg: FileCreatorMessage) ?u16 {
+        return msg.software_version;
+    }
+
+    pub fn getHardwareVersion(msg: FileCreatorMessage) ?u8 {
+        return msg.hardware_version;
+    }
+
     pub fn fromRawFields(msg: *FileCreatorMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5523,6 +5558,41 @@ pub const TimestampCorrelationMessage = struct {
     timestamp_ms: ?u16 = null,
     /// Millisecond part of the system timestamp
     system_timestamp_ms: ?u16 = null,
+
+    /// Whole second part of UTC timestamp at the time the system timestamp was recorded.
+    pub fn getTimestamp(msg: TimestampCorrelationMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Fractional part of the UTC timestamp at the time the system timestamp was recorded.
+    pub fn getFractionalTimestamp(msg: TimestampCorrelationMessage) ?f32 {
+        return msg.fractional_timestamp;
+    }
+
+    /// Whole second part of the system timestamp
+    pub fn getSystemTimestamp(msg: TimestampCorrelationMessage) ?u32 {
+        return msg.system_timestamp;
+    }
+
+    /// Fractional part of the system timestamp
+    pub fn getFractionalSystemTimestamp(msg: TimestampCorrelationMessage) ?f32 {
+        return msg.fractional_system_timestamp;
+    }
+
+    /// timestamp epoch expressed in local time used to convert timestamps to local time
+    pub fn getLocalTimestamp(msg: TimestampCorrelationMessage) ?u32 {
+        return msg.local_timestamp;
+    }
+
+    /// Millisecond part of the UTC timestamp at the time the system timestamp was recorded.
+    pub fn getTimestampMs(msg: TimestampCorrelationMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Millisecond part of the system timestamp
+    pub fn getSystemTimestampMs(msg: TimestampCorrelationMessage) ?u16 {
+        return msg.system_timestamp_ms;
+    }
 
     pub fn fromRawFields(msg: *TimestampCorrelationMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -5569,6 +5639,18 @@ pub const SoftwareMessage = struct {
     version: ?f32 = null,
     part_number: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: SoftwareMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getVersion(msg: SoftwareMessage) ?f32 {
+        return msg.version;
+    }
+
+    pub fn getPartNumber(msg: SoftwareMessage) ?[:0]u8 {
+        return msg.part_number;
+    }
+
     pub fn fromRawFields(msg: *SoftwareMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5601,6 +5683,10 @@ pub const SoftwareMessage = struct {
 pub const SlaveDeviceMessage = struct {
     manufacturer: ?Manufacturer = null,
 
+    pub fn getManufacturer(msg: SlaveDeviceMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
     pub fn fromRawFields(msg: *SlaveDeviceMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5622,6 +5708,24 @@ pub const CapabilitiesMessage = struct {
     sports: ?[]SportBits0 = null,
     workouts_supported: ?WorkoutCapabilities = null,
     connectivity_supported: ?ConnectivityCapabilities = null,
+
+    /// Use language_bits_x types where x is index of array.
+    pub fn getLanguages(msg: CapabilitiesMessage) ?[]u8 {
+        return msg.languages;
+    }
+
+    /// Use sport_bits_x types where x is index of array.
+    pub fn getSports(msg: CapabilitiesMessage) ?[]SportBits0 {
+        return msg.sports;
+    }
+
+    pub fn getWorkoutsSupported(msg: CapabilitiesMessage) ?WorkoutCapabilities {
+        return msg.workouts_supported;
+    }
+
+    pub fn getConnectivitySupported(msg: CapabilitiesMessage) ?ConnectivityCapabilities {
+        return msg.connectivity_supported;
+    }
 
     pub fn fromRawFields(msg: *CapabilitiesMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -5672,6 +5776,30 @@ pub const FileCapabilitiesMessage = struct {
     max_count: ?u16 = null,
     max_size: ?u32 = null,
 
+    pub fn getMessageIndex(msg: FileCapabilitiesMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getType(msg: FileCapabilitiesMessage) ?File {
+        return msg.type;
+    }
+
+    pub fn getFlags(msg: FileCapabilitiesMessage) ?FileFlags {
+        return msg.flags;
+    }
+
+    pub fn getDirectory(msg: FileCapabilitiesMessage) ?[:0]u8 {
+        return msg.directory;
+    }
+
+    pub fn getMaxCount(msg: FileCapabilitiesMessage) ?u16 {
+        return msg.max_count;
+    }
+
+    pub fn getMaxSize(msg: FileCapabilitiesMessage) ?u32 {
+        return msg.max_size;
+    }
+
     pub fn fromRawFields(msg: *FileCapabilitiesMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5718,6 +5846,22 @@ pub const MesgCapabilitiesMessage = struct {
     mesg_num: ?MesgNum = null,
     count_type: ?MesgCount = null,
 
+    pub fn getMessageIndex(msg: MesgCapabilitiesMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getFile(msg: MesgCapabilitiesMessage) ?File {
+        return msg.file;
+    }
+
+    pub fn getMesgNum(msg: MesgCapabilitiesMessage) ?MesgNum {
+        return msg.mesg_num;
+    }
+
+    pub fn getCountType(msg: MesgCapabilitiesMessage) ?MesgCount {
+        return msg.count_type;
+    }
+
     pub fn fromRawFields(msg: *MesgCapabilitiesMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -5750,6 +5894,26 @@ pub const FieldCapabilitiesMessage = struct {
     mesg_num: ?MesgNum = null,
     field_num: ?u8 = null,
     count: ?u16 = null,
+
+    pub fn getMessageIndex(msg: FieldCapabilitiesMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getFile(msg: FieldCapabilitiesMessage) ?File {
+        return msg.file;
+    }
+
+    pub fn getMesgNum(msg: FieldCapabilitiesMessage) ?MesgNum {
+        return msg.mesg_num;
+    }
+
+    pub fn getFieldNum(msg: FieldCapabilitiesMessage) ?u8 {
+        return msg.field_num;
+    }
+
+    pub fn getCount(msg: FieldCapabilitiesMessage) ?u16 {
+        return msg.count;
+    }
 
     pub fn fromRawFields(msg: *FieldCapabilitiesMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -5827,6 +5991,123 @@ pub const DeviceSettingsMessage = struct {
     tap_interface: ?Switch = null,
     /// Used to hold the tap threshold setting
     tap_sensitivity: ?TapSensitivity = null,
+
+    /// Index into time zone arrays.
+    pub fn getActiveTimeZone(msg: DeviceSettingsMessage) ?u8 {
+        return msg.active_time_zone;
+    }
+
+    /// Offset from system time. Required to convert timestamp from system time to UTC.
+    pub fn getUtcOffset(msg: DeviceSettingsMessage) ?u32 {
+        return msg.utc_offset;
+    }
+
+    /// Offset from system time.
+    pub fn getTimeOffset(msg: DeviceSettingsMessage) ?[]u32 {
+        return msg.time_offset;
+    }
+
+    /// Display mode for the time
+    pub fn getTimeMode(msg: DeviceSettingsMessage) ?[]TimeMode {
+        return msg.time_mode;
+    }
+
+    /// timezone offset in 1/4 hour increments
+    pub fn getTimeZoneOffset(msg: DeviceSettingsMessage) ?[]f32 {
+        return msg.time_zone_offset;
+    }
+
+    /// Mode for backlight
+    pub fn getBacklightMode(msg: DeviceSettingsMessage) ?BacklightMode {
+        return msg.backlight_mode;
+    }
+
+    /// Enabled state of the activity tracker functionality
+    pub fn getActivityTrackerEnabled(msg: DeviceSettingsMessage) ?bool {
+        return msg.activity_tracker_enabled;
+    }
+
+    /// UTC timestamp used to set the devices clock and date
+    pub fn getClockTime(msg: DeviceSettingsMessage) ?u32 {
+        return msg.clock_time;
+    }
+
+    /// Bitfield to configure enabled screens for each supported loop
+    pub fn getPagesEnabled(msg: DeviceSettingsMessage) ?[]u16 {
+        return msg.pages_enabled;
+    }
+
+    /// Enabled state of the move alert
+    pub fn getMoveAlertEnabled(msg: DeviceSettingsMessage) ?bool {
+        return msg.move_alert_enabled;
+    }
+
+    /// Display mode for the date
+    pub fn getDateMode(msg: DeviceSettingsMessage) ?DateMode {
+        return msg.date_mode;
+    }
+
+    pub fn getDisplayOrientation(msg: DeviceSettingsMessage) ?DisplayOrientation {
+        return msg.display_orientation;
+    }
+
+    pub fn getMountingSide(msg: DeviceSettingsMessage) ?Side {
+        return msg.mounting_side;
+    }
+
+    /// Bitfield to indicate one page as default for each supported loop
+    pub fn getDefaultPage(msg: DeviceSettingsMessage) ?[]u16 {
+        return msg.default_page;
+    }
+
+    /// Minimum steps before an autosync can occur
+    pub fn getAutosyncMinSteps(msg: DeviceSettingsMessage) ?u16 {
+        return msg.autosync_min_steps;
+    }
+
+    /// Minimum minutes before an autosync can occur
+    pub fn getAutosyncMinTime(msg: DeviceSettingsMessage) ?u16 {
+        return msg.autosync_min_time;
+    }
+
+    /// Enable auto-detect setting for the lactate threshold feature.
+    pub fn getLactateThresholdAutodetectEnabled(msg: DeviceSettingsMessage) ?bool {
+        return msg.lactate_threshold_autodetect_enabled;
+    }
+
+    /// Automatically upload using BLE
+    pub fn getBleAutoUploadEnabled(msg: DeviceSettingsMessage) ?bool {
+        return msg.ble_auto_upload_enabled;
+    }
+
+    /// Helps to conserve battery by changing modes
+    pub fn getAutoSyncFrequency(msg: DeviceSettingsMessage) ?AutoSyncFrequency {
+        return msg.auto_sync_frequency;
+    }
+
+    /// Allows setting specific activities auto-activity detect enabled/disabled settings
+    pub fn getAutoActivityDetect(msg: DeviceSettingsMessage) ?AutoActivityDetect {
+        return msg.auto_activity_detect;
+    }
+
+    /// Number of screens configured to display
+    pub fn getNumberOfScreens(msg: DeviceSettingsMessage) ?u8 {
+        return msg.number_of_screens;
+    }
+
+    /// Smart Notification display orientation
+    pub fn getSmartNotificationDisplayOrientation(msg: DeviceSettingsMessage) ?DisplayOrientation {
+        return msg.smart_notification_display_orientation;
+    }
+
+    pub fn getTapInterface(msg: DeviceSettingsMessage) ?Switch {
+        return msg.tap_interface;
+    }
+
+    /// Used to hold the tap threshold setting
+    pub fn getTapSensitivity(msg: DeviceSettingsMessage) ?TapSensitivity {
+        return msg.tap_sensitivity;
+    }
 
     pub fn fromRawFields(msg: *DeviceSettingsMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -5988,6 +6269,127 @@ pub const UserProfileMessage = struct {
     depth_setting: ?DisplayMeasure = null,
     dive_count: ?u32 = null,
 
+    pub fn getMessageIndex(msg: UserProfileMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Used for Morning Report greeting
+    pub fn getFriendlyName(msg: UserProfileMessage) ?[:0]u8 {
+        return msg.friendly_name;
+    }
+
+    pub fn getGender(msg: UserProfileMessage) ?Gender {
+        return msg.gender;
+    }
+
+    pub fn getAge(msg: UserProfileMessage) ?u8 {
+        return msg.age;
+    }
+
+    pub fn getHeight(msg: UserProfileMessage) ?f32 {
+        return msg.height;
+    }
+
+    pub fn getWeight(msg: UserProfileMessage) ?f32 {
+        return msg.weight;
+    }
+
+    pub fn getLanguage(msg: UserProfileMessage) ?Language {
+        return msg.language;
+    }
+
+    pub fn getElevSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.elev_setting;
+    }
+
+    pub fn getWeightSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.weight_setting;
+    }
+
+    pub fn getRestingHeartRate(msg: UserProfileMessage) ?u8 {
+        return msg.resting_heart_rate;
+    }
+
+    pub fn getDefaultMaxRunningHeartRate(msg: UserProfileMessage) ?u8 {
+        return msg.default_max_running_heart_rate;
+    }
+
+    pub fn getDefaultMaxBikingHeartRate(msg: UserProfileMessage) ?u8 {
+        return msg.default_max_biking_heart_rate;
+    }
+
+    pub fn getDefaultMaxHeartRate(msg: UserProfileMessage) ?u8 {
+        return msg.default_max_heart_rate;
+    }
+
+    pub fn getHrSetting(msg: UserProfileMessage) ?DisplayHeart {
+        return msg.hr_setting;
+    }
+
+    pub fn getSpeedSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.speed_setting;
+    }
+
+    pub fn getDistSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.dist_setting;
+    }
+
+    pub fn getPowerSetting(msg: UserProfileMessage) ?DisplayPower {
+        return msg.power_setting;
+    }
+
+    pub fn getActivityClass(msg: UserProfileMessage) ?ActivityClass {
+        return msg.activity_class;
+    }
+
+    pub fn getPositionSetting(msg: UserProfileMessage) ?DisplayPosition {
+        return msg.position_setting;
+    }
+
+    pub fn getTemperatureSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.temperature_setting;
+    }
+
+    pub fn getLocalId(msg: UserProfileMessage) ?UserLocalId {
+        return msg.local_id;
+    }
+
+    pub fn getGlobalId(msg: UserProfileMessage) ?[]u8 {
+        return msg.global_id;
+    }
+
+    /// Typical wake time
+    pub fn getWakeTime(msg: UserProfileMessage) ?LocaltimeIntoDay {
+        return msg.wake_time;
+    }
+
+    /// Typical bed time
+    pub fn getSleepTime(msg: UserProfileMessage) ?LocaltimeIntoDay {
+        return msg.sleep_time;
+    }
+
+    pub fn getHeightSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.height_setting;
+    }
+
+    /// User defined running step length set to 0 for auto length
+    pub fn getUserRunningStepLength(msg: UserProfileMessage) ?f32 {
+        return msg.user_running_step_length;
+    }
+
+    /// User defined walking step length set to 0 for auto length
+    pub fn getUserWalkingStepLength(msg: UserProfileMessage) ?f32 {
+        return msg.user_walking_step_length;
+    }
+
+    pub fn getDepthSetting(msg: UserProfileMessage) ?DisplayMeasure {
+        return msg.depth_setting;
+    }
+
+    pub fn getDiveCount(msg: UserProfileMessage) ?u32 {
+        return msg.dive_count;
+    }
+
     pub fn fromRawFields(msg: *UserProfileMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6137,6 +6539,26 @@ pub const HrmProfileMessage = struct {
     log_hrv: ?bool = null,
     hrm_ant_id_trans_type: ?u8 = null,
 
+    pub fn getMessageIndex(msg: HrmProfileMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getEnabled(msg: HrmProfileMessage) ?bool {
+        return msg.enabled;
+    }
+
+    pub fn getHrmAntId(msg: HrmProfileMessage) ?u16 {
+        return msg.hrm_ant_id;
+    }
+
+    pub fn getLogHrv(msg: HrmProfileMessage) ?bool {
+        return msg.log_hrv;
+    }
+
+    pub fn getHrmAntIdTransType(msg: HrmProfileMessage) ?u8 {
+        return msg.hrm_ant_id_trans_type;
+    }
+
     pub fn fromRawFields(msg: *HrmProfileMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6170,6 +6592,40 @@ pub const SdmProfileMessage = struct {
     sdm_ant_id_trans_type: ?u8 = null,
     /// Rollover counter that can be used to extend the odometer
     odometer_rollover: ?u8 = null,
+
+    pub fn getMessageIndex(msg: SdmProfileMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getEnabled(msg: SdmProfileMessage) ?bool {
+        return msg.enabled;
+    }
+
+    pub fn getSdmAntId(msg: SdmProfileMessage) ?u16 {
+        return msg.sdm_ant_id;
+    }
+
+    pub fn getSdmCalFactor(msg: SdmProfileMessage) ?f32 {
+        return msg.sdm_cal_factor;
+    }
+
+    pub fn getOdometer(msg: SdmProfileMessage) ?f32 {
+        return msg.odometer;
+    }
+
+    /// Use footpod for speed source instead of GPS
+    pub fn getSpeedSource(msg: SdmProfileMessage) ?bool {
+        return msg.speed_source;
+    }
+
+    pub fn getSdmAntIdTransType(msg: SdmProfileMessage) ?u8 {
+        return msg.sdm_ant_id_trans_type;
+    }
+
+    /// Rollover counter that can be used to extend the odometer
+    pub fn getOdometerRollover(msg: SdmProfileMessage) ?u8 {
+        return msg.odometer_rollover;
+    }
 
     pub fn fromRawFields(msg: *SdmProfileMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -6245,6 +6701,139 @@ pub const BikeProfileMessage = struct {
     /// Number of teeth on each gear 0 is innermost
     rear_gear: ?[]u8 = null,
     shimano_di2_enabled: ?bool = null,
+
+    pub fn getMessageIndex(msg: BikeProfileMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getName(msg: BikeProfileMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getSport(msg: BikeProfileMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: BikeProfileMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getOdometer(msg: BikeProfileMessage) ?f32 {
+        return msg.odometer;
+    }
+
+    pub fn getBikeSpdAntId(msg: BikeProfileMessage) ?u16 {
+        return msg.bike_spd_ant_id;
+    }
+
+    pub fn getBikeCadAntId(msg: BikeProfileMessage) ?u16 {
+        return msg.bike_cad_ant_id;
+    }
+
+    pub fn getBikeSpdcadAntId(msg: BikeProfileMessage) ?u16 {
+        return msg.bike_spdcad_ant_id;
+    }
+
+    pub fn getBikePowerAntId(msg: BikeProfileMessage) ?u16 {
+        return msg.bike_power_ant_id;
+    }
+
+    pub fn getCustomWheelsize(msg: BikeProfileMessage) ?f32 {
+        return msg.custom_wheelsize;
+    }
+
+    pub fn getAutoWheelsize(msg: BikeProfileMessage) ?f32 {
+        return msg.auto_wheelsize;
+    }
+
+    pub fn getBikeWeight(msg: BikeProfileMessage) ?f32 {
+        return msg.bike_weight;
+    }
+
+    pub fn getPowerCalFactor(msg: BikeProfileMessage) ?f32 {
+        return msg.power_cal_factor;
+    }
+
+    pub fn getAutoWheelCal(msg: BikeProfileMessage) ?bool {
+        return msg.auto_wheel_cal;
+    }
+
+    pub fn getAutoPowerZero(msg: BikeProfileMessage) ?bool {
+        return msg.auto_power_zero;
+    }
+
+    pub fn getId(msg: BikeProfileMessage) ?u8 {
+        return msg.id;
+    }
+
+    pub fn getSpdEnabled(msg: BikeProfileMessage) ?bool {
+        return msg.spd_enabled;
+    }
+
+    pub fn getCadEnabled(msg: BikeProfileMessage) ?bool {
+        return msg.cad_enabled;
+    }
+
+    pub fn getSpdcadEnabled(msg: BikeProfileMessage) ?bool {
+        return msg.spdcad_enabled;
+    }
+
+    pub fn getPowerEnabled(msg: BikeProfileMessage) ?bool {
+        return msg.power_enabled;
+    }
+
+    pub fn getCrankLength(msg: BikeProfileMessage) ?f32 {
+        return msg.crank_length;
+    }
+
+    pub fn getEnabled(msg: BikeProfileMessage) ?bool {
+        return msg.enabled;
+    }
+
+    pub fn getBikeSpdAntIdTransType(msg: BikeProfileMessage) ?u8 {
+        return msg.bike_spd_ant_id_trans_type;
+    }
+
+    pub fn getBikeCadAntIdTransType(msg: BikeProfileMessage) ?u8 {
+        return msg.bike_cad_ant_id_trans_type;
+    }
+
+    pub fn getBikeSpdcadAntIdTransType(msg: BikeProfileMessage) ?u8 {
+        return msg.bike_spdcad_ant_id_trans_type;
+    }
+
+    pub fn getBikePowerAntIdTransType(msg: BikeProfileMessage) ?u8 {
+        return msg.bike_power_ant_id_trans_type;
+    }
+
+    /// Rollover counter that can be used to extend the odometer
+    pub fn getOdometerRollover(msg: BikeProfileMessage) ?u8 {
+        return msg.odometer_rollover;
+    }
+
+    /// Number of front gears
+    pub fn getFrontGearNum(msg: BikeProfileMessage) ?u8 {
+        return msg.front_gear_num;
+    }
+
+    /// Number of teeth on each gear 0 is innermost
+    pub fn getFrontGear(msg: BikeProfileMessage) ?[]u8 {
+        return msg.front_gear;
+    }
+
+    /// Number of rear gears
+    pub fn getRearGearNum(msg: BikeProfileMessage) ?u8 {
+        return msg.rear_gear_num;
+    }
+
+    /// Number of teeth on each gear 0 is innermost
+    pub fn getRearGear(msg: BikeProfileMessage) ?[]u8 {
+        return msg.rear_gear;
+    }
+
+    pub fn getShimanoDi2Enabled(msg: BikeProfileMessage) ?bool {
+        return msg.shimano_di2_enabled;
+    }
 
     pub fn fromRawFields(msg: *BikeProfileMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -6394,6 +6983,61 @@ pub const ConnectivityMessage = struct {
     incident_detection_enabled: ?bool = null,
     grouptrack_enabled: ?bool = null,
 
+    /// Use Bluetooth for connectivity features
+    pub fn getBluetoothEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.bluetooth_enabled;
+    }
+
+    /// Use Bluetooth Low Energy for connectivity features
+    pub fn getBluetoothLeEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.bluetooth_le_enabled;
+    }
+
+    /// Use ANT for connectivity features
+    pub fn getAntEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.ant_enabled;
+    }
+
+    pub fn getName(msg: ConnectivityMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getLiveTrackingEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.live_tracking_enabled;
+    }
+
+    pub fn getWeatherConditionsEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.weather_conditions_enabled;
+    }
+
+    pub fn getWeatherAlertsEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.weather_alerts_enabled;
+    }
+
+    pub fn getAutoActivityUploadEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.auto_activity_upload_enabled;
+    }
+
+    pub fn getCourseDownloadEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.course_download_enabled;
+    }
+
+    pub fn getWorkoutDownloadEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.workout_download_enabled;
+    }
+
+    pub fn getGpsEphemerisDownloadEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.gps_ephemeris_download_enabled;
+    }
+
+    pub fn getIncidentDetectionEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.incident_detection_enabled;
+    }
+
+    pub fn getGrouptrackEnabled(msg: ConnectivityMessage) ?bool {
+        return msg.grouptrack_enabled;
+    }
+
     pub fn fromRawFields(msg: *ConnectivityMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6418,6 +7062,14 @@ pub const WatchfaceSettingsMessage = struct {
     message_index: ?MessageIndex = null,
     mode: ?WatchfaceMode = null,
 
+    pub fn getMessageIndex(msg: WatchfaceSettingsMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getMode(msg: WatchfaceSettingsMessage) ?WatchfaceMode {
+        return msg.mode;
+    }
+
     pub fn fromRawFields(msg: *WatchfaceSettingsMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6439,6 +7091,14 @@ pub const WatchfaceSettingsMessage = struct {
 pub const OhrSettingsMessage = struct {
     timestamp: ?u32 = null,
     enabled: ?Switch = null,
+
+    pub fn getTimestamp(msg: OhrSettingsMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getEnabled(msg: OhrSettingsMessage) ?Switch {
+        return msg.enabled;
+    }
 
     pub fn fromRawFields(msg: *OhrSettingsMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -6476,6 +7136,74 @@ pub const TimeInZoneMessage = struct {
     threshold_heart_rate: ?u8 = null,
     pwr_calc_type: ?PwrZoneCalc = null,
     functional_threshold_power: ?u16 = null,
+
+    pub fn getTimestamp(msg: TimeInZoneMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getReferenceMesg(msg: TimeInZoneMessage) ?MesgNum {
+        return msg.reference_mesg;
+    }
+
+    pub fn getReferenceIndex(msg: TimeInZoneMessage) ?MessageIndex {
+        return msg.reference_index;
+    }
+
+    pub fn getTimeInHrZone(msg: TimeInZoneMessage) ?[]f32 {
+        return msg.time_in_hr_zone;
+    }
+
+    pub fn getTimeInSpeedZone(msg: TimeInZoneMessage) ?[]f32 {
+        return msg.time_in_speed_zone;
+    }
+
+    pub fn getTimeInCadenceZone(msg: TimeInZoneMessage) ?[]f32 {
+        return msg.time_in_cadence_zone;
+    }
+
+    pub fn getTimeInPowerZone(msg: TimeInZoneMessage) ?[]f32 {
+        return msg.time_in_power_zone;
+    }
+
+    pub fn getHrZoneHighBoundary(msg: TimeInZoneMessage) ?[]u8 {
+        return msg.hr_zone_high_boundary;
+    }
+
+    pub fn getSpeedZoneHighBoundary(msg: TimeInZoneMessage) ?[]f32 {
+        return msg.speed_zone_high_boundary;
+    }
+
+    pub fn getCadenceZoneHighBondary(msg: TimeInZoneMessage) ?[]u8 {
+        return msg.cadence_zone_high_bondary;
+    }
+
+    pub fn getPowerZoneHighBoundary(msg: TimeInZoneMessage) ?[]u16 {
+        return msg.power_zone_high_boundary;
+    }
+
+    pub fn getHrCalcType(msg: TimeInZoneMessage) ?HrZoneCalc {
+        return msg.hr_calc_type;
+    }
+
+    pub fn getMaxHeartRate(msg: TimeInZoneMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    pub fn getRestingHeartRate(msg: TimeInZoneMessage) ?u8 {
+        return msg.resting_heart_rate;
+    }
+
+    pub fn getThresholdHeartRate(msg: TimeInZoneMessage) ?u8 {
+        return msg.threshold_heart_rate;
+    }
+
+    pub fn getPwrCalcType(msg: TimeInZoneMessage) ?PwrZoneCalc {
+        return msg.pwr_calc_type;
+    }
+
+    pub fn getFunctionalThresholdPower(msg: TimeInZoneMessage) ?u16 {
+        return msg.functional_threshold_power;
+    }
 
     pub fn fromRawFields(msg: *TimeInZoneMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -6618,6 +7346,26 @@ pub const ZonesTargetMessage = struct {
     hr_calc_type: ?HrZoneCalc = null,
     pwr_calc_type: ?PwrZoneCalc = null,
 
+    pub fn getMaxHeartRate(msg: ZonesTargetMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    pub fn getThresholdHeartRate(msg: ZonesTargetMessage) ?u8 {
+        return msg.threshold_heart_rate;
+    }
+
+    pub fn getFunctionalThresholdPower(msg: ZonesTargetMessage) ?u16 {
+        return msg.functional_threshold_power;
+    }
+
+    pub fn getHrCalcType(msg: ZonesTargetMessage) ?HrZoneCalc {
+        return msg.hr_calc_type;
+    }
+
+    pub fn getPwrCalcType(msg: ZonesTargetMessage) ?PwrZoneCalc {
+        return msg.pwr_calc_type;
+    }
+
     pub fn fromRawFields(msg: *ZonesTargetMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6653,6 +7401,18 @@ pub const SportMessage = struct {
     sub_sport: ?SubSport = null,
     name: ?[:0]u8 = null,
 
+    pub fn getSport(msg: SportMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: SportMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getName(msg: SportMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
     pub fn fromRawFields(msg: *SportMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6686,6 +7446,18 @@ pub const HrZoneMessage = struct {
     high_bpm: ?u8 = null,
     name: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: HrZoneMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHighBpm(msg: HrZoneMessage) ?u8 {
+        return msg.high_bpm;
+    }
+
+    pub fn getName(msg: HrZoneMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
     pub fn fromRawFields(msg: *HrZoneMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6718,6 +7490,18 @@ pub const SpeedZoneMessage = struct {
     message_index: ?MessageIndex = null,
     high_value: ?f32 = null,
     name: ?[:0]u8 = null,
+
+    pub fn getMessageIndex(msg: SpeedZoneMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHighValue(msg: SpeedZoneMessage) ?f32 {
+        return msg.high_value;
+    }
+
+    pub fn getName(msg: SpeedZoneMessage) ?[:0]u8 {
+        return msg.name;
+    }
 
     pub fn fromRawFields(msg: *SpeedZoneMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -6753,6 +7537,18 @@ pub const CadenceZoneMessage = struct {
     high_value: ?u8 = null,
     name: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: CadenceZoneMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHighValue(msg: CadenceZoneMessage) ?u8 {
+        return msg.high_value;
+    }
+
+    pub fn getName(msg: CadenceZoneMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
     pub fn fromRawFields(msg: *CadenceZoneMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6785,6 +7581,18 @@ pub const PowerZoneMessage = struct {
     message_index: ?MessageIndex = null,
     high_value: ?u16 = null,
     name: ?[:0]u8 = null,
+
+    pub fn getMessageIndex(msg: PowerZoneMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHighValue(msg: PowerZoneMessage) ?u16 {
+        return msg.high_value;
+    }
+
+    pub fn getName(msg: PowerZoneMessage) ?[:0]u8 {
+        return msg.name;
+    }
 
     pub fn fromRawFields(msg: *PowerZoneMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -6820,6 +7628,22 @@ pub const MetZoneMessage = struct {
     calories: ?f32 = null,
     fat_calories: ?f32 = null,
 
+    pub fn getMessageIndex(msg: MetZoneMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHighBpm(msg: MetZoneMessage) ?u8 {
+        return msg.high_bpm;
+    }
+
+    pub fn getCalories(msg: MetZoneMessage) ?f32 {
+        return msg.calories;
+    }
+
+    pub fn getFatCalories(msg: MetZoneMessage) ?f32 {
+        return msg.fat_calories;
+    }
+
     pub fn fromRawFields(msg: *MetZoneMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -6854,6 +7678,23 @@ pub const TrainingSettingsMessage = struct {
     target_time: ?u32 = null,
     /// A more precise target speed field
     precise_target_speed: ?f32 = null,
+
+    pub fn getTargetDistance(msg: TrainingSettingsMessage) ?f32 {
+        return msg.target_distance;
+    }
+
+    pub fn getTargetSpeed(msg: TrainingSettingsMessage) ?f32 {
+        return msg.target_speed;
+    }
+
+    pub fn getTargetTime(msg: TrainingSettingsMessage) ?u32 {
+        return msg.target_time;
+    }
+
+    /// A more precise target speed field
+    pub fn getPreciseTargetSpeed(msg: TrainingSettingsMessage) ?f32 {
+        return msg.precise_target_speed;
+    }
 
     pub fn fromRawFields(msg: *TrainingSettingsMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -6936,6 +7777,159 @@ pub const DiveSettingsMessage = struct {
     last_stop_multiple: ?f32 = null,
     /// Indicates which guidelines to use for no-fly surface interval.
     no_fly_time_mode: ?NoFlyTimeMode = null,
+
+    pub fn getTimestamp(msg: DiveSettingsMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getMessageIndex(msg: DiveSettingsMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getName(msg: DiveSettingsMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getModel(msg: DiveSettingsMessage) ?TissueModelType {
+        return msg.model;
+    }
+
+    pub fn getGfLow(msg: DiveSettingsMessage) ?u8 {
+        return msg.gf_low;
+    }
+
+    pub fn getGfHigh(msg: DiveSettingsMessage) ?u8 {
+        return msg.gf_high;
+    }
+
+    pub fn getWaterType(msg: DiveSettingsMessage) ?WaterType {
+        return msg.water_type;
+    }
+
+    /// Fresh water is usually 1000; salt water is usually 1025
+    pub fn getWaterDensity(msg: DiveSettingsMessage) ?f32 {
+        return msg.water_density;
+    }
+
+    /// Typically 1.40
+    pub fn getPo2Warn(msg: DiveSettingsMessage) ?f32 {
+        return msg.po2_warn;
+    }
+
+    /// Typically 1.60
+    pub fn getPo2Critical(msg: DiveSettingsMessage) ?f32 {
+        return msg.po2_critical;
+    }
+
+    pub fn getPo2Deco(msg: DiveSettingsMessage) ?f32 {
+        return msg.po2_deco;
+    }
+
+    pub fn getSafetyStopEnabled(msg: DiveSettingsMessage) ?bool {
+        return msg.safety_stop_enabled;
+    }
+
+    pub fn getBottomDepth(msg: DiveSettingsMessage) ?f32 {
+        return msg.bottom_depth;
+    }
+
+    pub fn getBottomTime(msg: DiveSettingsMessage) ?u32 {
+        return msg.bottom_time;
+    }
+
+    pub fn getApneaCountdownEnabled(msg: DiveSettingsMessage) ?bool {
+        return msg.apnea_countdown_enabled;
+    }
+
+    pub fn getApneaCountdownTime(msg: DiveSettingsMessage) ?u32 {
+        return msg.apnea_countdown_time;
+    }
+
+    pub fn getBacklightMode(msg: DiveSettingsMessage) ?DiveBacklightMode {
+        return msg.backlight_mode;
+    }
+
+    pub fn getBacklightBrightness(msg: DiveSettingsMessage) ?u8 {
+        return msg.backlight_brightness;
+    }
+
+    pub fn getBacklightTimeout(msg: DiveSettingsMessage) ?BacklightTimeout {
+        return msg.backlight_timeout;
+    }
+
+    /// Time between surfacing and ending the activity
+    pub fn getRepeatDiveInterval(msg: DiveSettingsMessage) ?f32 {
+        return msg.repeat_dive_interval;
+    }
+
+    /// Time at safety stop (if enabled)
+    pub fn getSafetyStopTime(msg: DiveSettingsMessage) ?f32 {
+        return msg.safety_stop_time;
+    }
+
+    pub fn getHeartRateSourceType(msg: DiveSettingsMessage) ?SourceType {
+        return msg.heart_rate_source_type;
+    }
+
+    /// Index of travel dive_gas message
+    pub fn getTravelGas(msg: DiveSettingsMessage) ?MessageIndex {
+        return msg.travel_gas;
+    }
+
+    /// If low PO2 should be switched to automatically
+    pub fn getCcrLowSetpointSwitchMode(msg: DiveSettingsMessage) ?CcrSetpointSwitchMode {
+        return msg.ccr_low_setpoint_switch_mode;
+    }
+
+    /// Target PO2 when using low setpoint
+    pub fn getCcrLowSetpoint(msg: DiveSettingsMessage) ?f32 {
+        return msg.ccr_low_setpoint;
+    }
+
+    /// Depth to switch to low setpoint in automatic mode
+    pub fn getCcrLowSetpointDepth(msg: DiveSettingsMessage) ?f32 {
+        return msg.ccr_low_setpoint_depth;
+    }
+
+    /// If high PO2 should be switched to automatically
+    pub fn getCcrHighSetpointSwitchMode(msg: DiveSettingsMessage) ?CcrSetpointSwitchMode {
+        return msg.ccr_high_setpoint_switch_mode;
+    }
+
+    /// Target PO2 when using high setpoint
+    pub fn getCcrHighSetpoint(msg: DiveSettingsMessage) ?f32 {
+        return msg.ccr_high_setpoint;
+    }
+
+    /// Depth to switch to high setpoint in automatic mode
+    pub fn getCcrHighSetpointDepth(msg: DiveSettingsMessage) ?f32 {
+        return msg.ccr_high_setpoint_depth;
+    }
+
+    /// Type of gas consumption rate to display. Some values are only valid if tank volume is known.
+    pub fn getGasConsumptionDisplay(msg: DiveSettingsMessage) ?GasConsumptionRateType {
+        return msg.gas_consumption_display;
+    }
+
+    /// Indicates whether the up key is enabled during dives
+    pub fn getUpKeyEnabled(msg: DiveSettingsMessage) ?bool {
+        return msg.up_key_enabled;
+    }
+
+    /// Sounds and vibration enabled or disabled in-dive
+    pub fn getDiveSounds(msg: DiveSettingsMessage) ?Tone {
+        return msg.dive_sounds;
+    }
+
+    /// Usually 1.0/1.5/2.0 representing 3/4.5/6m or 10/15/20ft
+    pub fn getLastStopMultiple(msg: DiveSettingsMessage) ?f32 {
+        return msg.last_stop_multiple;
+    }
+
+    /// Indicates which guidelines to use for no-fly surface interval.
+    pub fn getNoFlyTimeMode(msg: DiveSettingsMessage) ?NoFlyTimeMode {
+        return msg.no_fly_time_mode;
+    }
 
     pub fn fromRawFields(msg: *DiveSettingsMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -7115,6 +8109,71 @@ pub const DiveAlarmMessage = struct {
     /// Ascent/descent rate (mps) setting for speed type alarms
     speed: ?f32 = null,
 
+    /// Index of the alarm
+    pub fn getMessageIndex(msg: DiveAlarmMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Depth setting (m) for depth type alarms
+    pub fn getDepth(msg: DiveAlarmMessage) ?f32 {
+        return msg.depth;
+    }
+
+    /// Time setting (s) for time type alarms
+    pub fn getTime(msg: DiveAlarmMessage) ?f32 {
+        return msg.time;
+    }
+
+    /// Enablement flag
+    pub fn getEnabled(msg: DiveAlarmMessage) ?bool {
+        return msg.enabled;
+    }
+
+    /// Alarm type setting
+    pub fn getAlarmType(msg: DiveAlarmMessage) ?DiveAlarmType {
+        return msg.alarm_type;
+    }
+
+    /// Tone and Vibe setting for the alarm
+    pub fn getSound(msg: DiveAlarmMessage) ?Tone {
+        return msg.sound;
+    }
+
+    /// Dive types the alarm will trigger on
+    pub fn getDiveTypes(msg: DiveAlarmMessage) ?[]SubSport {
+        return msg.dive_types;
+    }
+
+    /// Alarm ID
+    pub fn getId(msg: DiveAlarmMessage) ?u32 {
+        return msg.id;
+    }
+
+    /// Show a visible pop-up for this alarm
+    pub fn getPopupEnabled(msg: DiveAlarmMessage) ?bool {
+        return msg.popup_enabled;
+    }
+
+    /// Trigger the alarm on descent
+    pub fn getTriggerOnDescent(msg: DiveAlarmMessage) ?bool {
+        return msg.trigger_on_descent;
+    }
+
+    /// Trigger the alarm on ascent
+    pub fn getTriggerOnAscent(msg: DiveAlarmMessage) ?bool {
+        return msg.trigger_on_ascent;
+    }
+
+    /// Repeat alarm each time threshold is crossed?
+    pub fn getRepeating(msg: DiveAlarmMessage) ?bool {
+        return msg.repeating;
+    }
+
+    /// Ascent/descent rate (mps) setting for speed type alarms
+    pub fn getSpeed(msg: DiveAlarmMessage) ?f32 {
+        return msg.speed;
+    }
+
     pub fn fromRawFields(msg: *DiveAlarmMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -7197,6 +8256,71 @@ pub const DiveApneaAlarmMessage = struct {
     /// Ascent/descent rate (mps) setting for speed type alarms
     speed: ?f32 = null,
 
+    /// Index of the alarm
+    pub fn getMessageIndex(msg: DiveApneaAlarmMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Depth setting (m) for depth type alarms
+    pub fn getDepth(msg: DiveApneaAlarmMessage) ?f32 {
+        return msg.depth;
+    }
+
+    /// Time setting (s) for time type alarms
+    pub fn getTime(msg: DiveApneaAlarmMessage) ?f32 {
+        return msg.time;
+    }
+
+    /// Enablement flag
+    pub fn getEnabled(msg: DiveApneaAlarmMessage) ?bool {
+        return msg.enabled;
+    }
+
+    /// Alarm type setting
+    pub fn getAlarmType(msg: DiveApneaAlarmMessage) ?DiveAlarmType {
+        return msg.alarm_type;
+    }
+
+    /// Tone and Vibe setting for the alarm.
+    pub fn getSound(msg: DiveApneaAlarmMessage) ?Tone {
+        return msg.sound;
+    }
+
+    /// Dive types the alarm will trigger on
+    pub fn getDiveTypes(msg: DiveApneaAlarmMessage) ?[]SubSport {
+        return msg.dive_types;
+    }
+
+    /// Alarm ID
+    pub fn getId(msg: DiveApneaAlarmMessage) ?u32 {
+        return msg.id;
+    }
+
+    /// Show a visible pop-up for this alarm
+    pub fn getPopupEnabled(msg: DiveApneaAlarmMessage) ?bool {
+        return msg.popup_enabled;
+    }
+
+    /// Trigger the alarm on descent
+    pub fn getTriggerOnDescent(msg: DiveApneaAlarmMessage) ?bool {
+        return msg.trigger_on_descent;
+    }
+
+    /// Trigger the alarm on ascent
+    pub fn getTriggerOnAscent(msg: DiveApneaAlarmMessage) ?bool {
+        return msg.trigger_on_ascent;
+    }
+
+    /// Repeat alarm each time threshold is crossed?
+    pub fn getRepeating(msg: DiveApneaAlarmMessage) ?bool {
+        return msg.repeating;
+    }
+
+    /// Ascent/descent rate (mps) setting for speed type alarms
+    pub fn getSpeed(msg: DiveApneaAlarmMessage) ?f32 {
+        return msg.speed;
+    }
+
     pub fn fromRawFields(msg: *DiveApneaAlarmMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -7258,6 +8382,26 @@ pub const DiveGasMessage = struct {
     status: ?DiveGasStatus = null,
     mode: ?DiveGasMode = null,
 
+    pub fn getMessageIndex(msg: DiveGasMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getHeliumContent(msg: DiveGasMessage) ?u8 {
+        return msg.helium_content;
+    }
+
+    pub fn getOxygenContent(msg: DiveGasMessage) ?u8 {
+        return msg.oxygen_content;
+    }
+
+    pub fn getStatus(msg: DiveGasMessage) ?DiveGasStatus {
+        return msg.status;
+    }
+
+    pub fn getMode(msg: DiveGasMessage) ?DiveGasMode {
+        return msg.mode;
+    }
+
     pub fn fromRawFields(msg: *DiveGasMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -7302,6 +8446,58 @@ pub const GoalMessage = struct {
     recurrence_value: ?u16 = null,
     enabled: ?bool = null,
     source: ?GoalSource = null,
+
+    pub fn getMessageIndex(msg: GoalMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getSport(msg: GoalMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: GoalMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getStartDate(msg: GoalMessage) ?u32 {
+        return msg.start_date;
+    }
+
+    pub fn getEndDate(msg: GoalMessage) ?u32 {
+        return msg.end_date;
+    }
+
+    pub fn getType(msg: GoalMessage) ?Goal {
+        return msg.type;
+    }
+
+    pub fn getValue(msg: GoalMessage) ?u32 {
+        return msg.value;
+    }
+
+    pub fn getRepeat(msg: GoalMessage) ?bool {
+        return msg.repeat;
+    }
+
+    pub fn getTargetValue(msg: GoalMessage) ?u32 {
+        return msg.target_value;
+    }
+
+    pub fn getRecurrence(msg: GoalMessage) ?GoalRecurrence {
+        return msg.recurrence;
+    }
+
+    pub fn getRecurrenceValue(msg: GoalMessage) ?u16 {
+        return msg.recurrence_value;
+    }
+
+    pub fn getEnabled(msg: GoalMessage) ?bool {
+        return msg.enabled;
+    }
+
+    pub fn getSource(msg: GoalMessage) ?GoalSource {
+        return msg.source;
+    }
 
     pub fn fromRawFields(msg: *GoalMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -7368,6 +8564,40 @@ pub const ActivityMessage = struct {
     /// timestamp epoch expressed in local time, used to convert activity timestamps to local time
     local_timestamp: ?u32 = null,
     event_group: ?u8 = null,
+
+    pub fn getTimestamp(msg: ActivityMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Exclude pauses
+    pub fn getTotalTimerTime(msg: ActivityMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getNumSessions(msg: ActivityMessage) ?u16 {
+        return msg.num_sessions;
+    }
+
+    pub fn getType(msg: ActivityMessage) ?Activity {
+        return msg.type;
+    }
+
+    pub fn getEvent(msg: ActivityMessage) ?Event {
+        return msg.event;
+    }
+
+    pub fn getEventType(msg: ActivityMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    /// timestamp epoch expressed in local time, used to convert activity timestamps to local time
+    pub fn getLocalTimestamp(msg: ActivityMessage) ?u32 {
+        return msg.local_timestamp;
+    }
+
+    pub fn getEventGroup(msg: ActivityMessage) ?u8 {
+        return msg.event_group;
+    }
 
     pub fn fromRawFields(msg: *ActivityMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -7625,6 +8855,683 @@ pub const SessionMessage = struct {
     avg_core_temperature: ?f32 = null,
     min_core_temperature: ?f32 = null,
     max_core_temperature: ?f32 = null,
+
+    /// Selected bit is set for the current session.
+    pub fn getMessageIndex(msg: SessionMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: SessionMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// session
+    pub fn getEvent(msg: SessionMessage) ?Event {
+        return msg.event;
+    }
+
+    /// stop
+    pub fn getEventType(msg: SessionMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    pub fn getStartTime(msg: SessionMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getStartPositionLat(msg: SessionMessage) ?i32 {
+        return msg.start_position_lat;
+    }
+
+    pub fn getStartPositionLong(msg: SessionMessage) ?i32 {
+        return msg.start_position_long;
+    }
+
+    pub fn getSport(msg: SessionMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: SessionMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    /// Time (includes pauses)
+    pub fn getTotalElapsedTime(msg: SessionMessage) ?f32 {
+        return msg.total_elapsed_time;
+    }
+
+    /// Timer Time (excludes pauses)
+    pub fn getTotalTimerTime(msg: SessionMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalDistance(msg: SessionMessage) ?f32 {
+        return msg.total_distance;
+    }
+
+    pub fn getTotalCalories(msg: SessionMessage) ?u16 {
+        return msg.total_calories;
+    }
+
+    pub fn getTotalFatCalories(msg: SessionMessage) ?u16 {
+        return msg.total_fat_calories;
+    }
+
+    /// total_distance / total_timer_time
+    pub fn getAvgSpeed(msg: SessionMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getMaxSpeed(msg: SessionMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    /// average heart rate (excludes pause time)
+    pub fn getAvgHeartRate(msg: SessionMessage) ?u8 {
+        return msg.avg_heart_rate;
+    }
+
+    pub fn getMaxHeartRate(msg: SessionMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    /// total_power / total_timer_time if non_zero_avg_power otherwise total_power / total_elapsed_time
+    pub fn getAvgPower(msg: SessionMessage) ?u16 {
+        return msg.avg_power;
+    }
+
+    pub fn getMaxPower(msg: SessionMessage) ?u16 {
+        return msg.max_power;
+    }
+
+    pub fn getTotalAscent(msg: SessionMessage) ?u16 {
+        return msg.total_ascent;
+    }
+
+    pub fn getTotalDescent(msg: SessionMessage) ?u16 {
+        return msg.total_descent;
+    }
+
+    pub fn getTotalTrainingEffect(msg: SessionMessage) ?f32 {
+        return msg.total_training_effect;
+    }
+
+    pub fn getFirstLapIndex(msg: SessionMessage) ?u16 {
+        return msg.first_lap_index;
+    }
+
+    pub fn getNumLaps(msg: SessionMessage) ?u16 {
+        return msg.num_laps;
+    }
+
+    pub fn getEventGroup(msg: SessionMessage) ?u8 {
+        return msg.event_group;
+    }
+
+    pub fn getTrigger(msg: SessionMessage) ?SessionTrigger {
+        return msg.trigger;
+    }
+
+    /// North east corner latitude
+    pub fn getNecLat(msg: SessionMessage) ?i32 {
+        return msg.nec_lat;
+    }
+
+    /// North east corner longitude
+    pub fn getNecLong(msg: SessionMessage) ?i32 {
+        return msg.nec_long;
+    }
+
+    /// South west corner latitude
+    pub fn getSwcLat(msg: SessionMessage) ?i32 {
+        return msg.swc_lat;
+    }
+
+    /// South west corner longitude
+    pub fn getSwcLong(msg: SessionMessage) ?i32 {
+        return msg.swc_long;
+    }
+
+    /// # of lengths of swim pool
+    pub fn getNumLengths(msg: SessionMessage) ?u16 {
+        return msg.num_lengths;
+    }
+
+    pub fn getNormalizedPower(msg: SessionMessage) ?u16 {
+        return msg.normalized_power;
+    }
+
+    pub fn getTrainingStressScore(msg: SessionMessage) ?f32 {
+        return msg.training_stress_score;
+    }
+
+    pub fn getIntensityFactor(msg: SessionMessage) ?f32 {
+        return msg.intensity_factor;
+    }
+
+    pub fn getLeftRightBalance(msg: SessionMessage) ?LeftRightBalance100 {
+        return msg.left_right_balance;
+    }
+
+    pub fn getEndPositionLat(msg: SessionMessage) ?i32 {
+        return msg.end_position_lat;
+    }
+
+    pub fn getEndPositionLong(msg: SessionMessage) ?i32 {
+        return msg.end_position_long;
+    }
+
+    pub fn getAvgStrokeCount(msg: SessionMessage) ?f32 {
+        return msg.avg_stroke_count;
+    }
+
+    pub fn getAvgStrokeDistance(msg: SessionMessage) ?f32 {
+        return msg.avg_stroke_distance;
+    }
+
+    pub fn getSwimStroke(msg: SessionMessage) ?SwimStroke {
+        return msg.swim_stroke;
+    }
+
+    pub fn getPoolLength(msg: SessionMessage) ?f32 {
+        return msg.pool_length;
+    }
+
+    pub fn getThresholdPower(msg: SessionMessage) ?u16 {
+        return msg.threshold_power;
+    }
+
+    pub fn getPoolLengthUnit(msg: SessionMessage) ?DisplayMeasure {
+        return msg.pool_length_unit;
+    }
+
+    /// # of active lengths of swim pool
+    pub fn getNumActiveLengths(msg: SessionMessage) ?u16 {
+        return msg.num_active_lengths;
+    }
+
+    pub fn getTotalWork(msg: SessionMessage) ?u32 {
+        return msg.total_work;
+    }
+
+    pub fn getAvgAltitude(msg: SessionMessage) ?f32 {
+        return msg.avg_altitude;
+    }
+
+    pub fn getMaxAltitude(msg: SessionMessage) ?f32 {
+        return msg.max_altitude;
+    }
+
+    pub fn getGpsAccuracy(msg: SessionMessage) ?u8 {
+        return msg.gps_accuracy;
+    }
+
+    pub fn getAvgGrade(msg: SessionMessage) ?f32 {
+        return msg.avg_grade;
+    }
+
+    pub fn getAvgPosGrade(msg: SessionMessage) ?f32 {
+        return msg.avg_pos_grade;
+    }
+
+    pub fn getAvgNegGrade(msg: SessionMessage) ?f32 {
+        return msg.avg_neg_grade;
+    }
+
+    pub fn getMaxPosGrade(msg: SessionMessage) ?f32 {
+        return msg.max_pos_grade;
+    }
+
+    pub fn getMaxNegGrade(msg: SessionMessage) ?f32 {
+        return msg.max_neg_grade;
+    }
+
+    pub fn getAvgTemperature(msg: SessionMessage) ?i8 {
+        return msg.avg_temperature;
+    }
+
+    pub fn getMaxTemperature(msg: SessionMessage) ?i8 {
+        return msg.max_temperature;
+    }
+
+    pub fn getTotalMovingTime(msg: SessionMessage) ?f32 {
+        return msg.total_moving_time;
+    }
+
+    pub fn getAvgPosVerticalSpeed(msg: SessionMessage) ?f32 {
+        return msg.avg_pos_vertical_speed;
+    }
+
+    pub fn getAvgNegVerticalSpeed(msg: SessionMessage) ?f32 {
+        return msg.avg_neg_vertical_speed;
+    }
+
+    pub fn getMaxPosVerticalSpeed(msg: SessionMessage) ?f32 {
+        return msg.max_pos_vertical_speed;
+    }
+
+    pub fn getMaxNegVerticalSpeed(msg: SessionMessage) ?f32 {
+        return msg.max_neg_vertical_speed;
+    }
+
+    pub fn getMinHeartRate(msg: SessionMessage) ?u8 {
+        return msg.min_heart_rate;
+    }
+
+    pub fn getTimeInHrZone(msg: SessionMessage) ?[]f32 {
+        return msg.time_in_hr_zone;
+    }
+
+    pub fn getTimeInSpeedZone(msg: SessionMessage) ?[]f32 {
+        return msg.time_in_speed_zone;
+    }
+
+    pub fn getTimeInCadenceZone(msg: SessionMessage) ?[]f32 {
+        return msg.time_in_cadence_zone;
+    }
+
+    pub fn getTimeInPowerZone(msg: SessionMessage) ?[]f32 {
+        return msg.time_in_power_zone;
+    }
+
+    pub fn getAvgLapTime(msg: SessionMessage) ?f32 {
+        return msg.avg_lap_time;
+    }
+
+    pub fn getBestLapIndex(msg: SessionMessage) ?u16 {
+        return msg.best_lap_index;
+    }
+
+    pub fn getMinAltitude(msg: SessionMessage) ?f32 {
+        return msg.min_altitude;
+    }
+
+    pub fn getActiveTime(msg: SessionMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getPlayerScore(msg: SessionMessage) ?u16 {
+        return msg.player_score;
+    }
+
+    pub fn getOpponentScore(msg: SessionMessage) ?u16 {
+        return msg.opponent_score;
+    }
+
+    pub fn getOpponentName(msg: SessionMessage) ?[:0]u8 {
+        return msg.opponent_name;
+    }
+
+    /// stroke_type enum used as the index
+    pub fn getStrokeCount(msg: SessionMessage) ?[]u16 {
+        return msg.stroke_count;
+    }
+
+    /// zone number used as the index
+    pub fn getZoneCount(msg: SessionMessage) ?[]u16 {
+        return msg.zone_count;
+    }
+
+    pub fn getMaxBallSpeed(msg: SessionMessage) ?f32 {
+        return msg.max_ball_speed;
+    }
+
+    pub fn getAvgBallSpeed(msg: SessionMessage) ?f32 {
+        return msg.avg_ball_speed;
+    }
+
+    pub fn getAvgVerticalOscillation(msg: SessionMessage) ?f32 {
+        return msg.avg_vertical_oscillation;
+    }
+
+    pub fn getAvgStanceTimePercent(msg: SessionMessage) ?f32 {
+        return msg.avg_stance_time_percent;
+    }
+
+    pub fn getAvgStanceTime(msg: SessionMessage) ?f32 {
+        return msg.avg_stance_time;
+    }
+
+    /// fractional part of the avg_cadence
+    pub fn getAvgFractionalCadence(msg: SessionMessage) ?f32 {
+        return msg.avg_fractional_cadence;
+    }
+
+    /// fractional part of the max_cadence
+    pub fn getMaxFractionalCadence(msg: SessionMessage) ?f32 {
+        return msg.max_fractional_cadence;
+    }
+
+    /// fractional part of the total_cycles
+    pub fn getTotalFractionalCycles(msg: SessionMessage) ?f32 {
+        return msg.total_fractional_cycles;
+    }
+
+    /// Avg saturated and unsaturated hemoglobin
+    pub fn getAvgTotalHemoglobinConc(msg: SessionMessage) ?[]f32 {
+        return msg.avg_total_hemoglobin_conc;
+    }
+
+    /// Min saturated and unsaturated hemoglobin
+    pub fn getMinTotalHemoglobinConc(msg: SessionMessage) ?[]f32 {
+        return msg.min_total_hemoglobin_conc;
+    }
+
+    /// Max saturated and unsaturated hemoglobin
+    pub fn getMaxTotalHemoglobinConc(msg: SessionMessage) ?[]f32 {
+        return msg.max_total_hemoglobin_conc;
+    }
+
+    /// Avg percentage of hemoglobin saturated with oxygen
+    pub fn getAvgSaturatedHemoglobinPercent(msg: SessionMessage) ?[]f32 {
+        return msg.avg_saturated_hemoglobin_percent;
+    }
+
+    /// Min percentage of hemoglobin saturated with oxygen
+    pub fn getMinSaturatedHemoglobinPercent(msg: SessionMessage) ?[]f32 {
+        return msg.min_saturated_hemoglobin_percent;
+    }
+
+    /// Max percentage of hemoglobin saturated with oxygen
+    pub fn getMaxSaturatedHemoglobinPercent(msg: SessionMessage) ?[]f32 {
+        return msg.max_saturated_hemoglobin_percent;
+    }
+
+    pub fn getAvgLeftTorqueEffectiveness(msg: SessionMessage) ?f32 {
+        return msg.avg_left_torque_effectiveness;
+    }
+
+    pub fn getAvgRightTorqueEffectiveness(msg: SessionMessage) ?f32 {
+        return msg.avg_right_torque_effectiveness;
+    }
+
+    pub fn getAvgLeftPedalSmoothness(msg: SessionMessage) ?f32 {
+        return msg.avg_left_pedal_smoothness;
+    }
+
+    pub fn getAvgRightPedalSmoothness(msg: SessionMessage) ?f32 {
+        return msg.avg_right_pedal_smoothness;
+    }
+
+    pub fn getAvgCombinedPedalSmoothness(msg: SessionMessage) ?f32 {
+        return msg.avg_combined_pedal_smoothness;
+    }
+
+    /// Sport name from associated sport mesg
+    pub fn getSportProfileName(msg: SessionMessage) ?[:0]u8 {
+        return msg.sport_profile_name;
+    }
+
+    pub fn getSportIndex(msg: SessionMessage) ?u8 {
+        return msg.sport_index;
+    }
+
+    /// Total time spend in the standing position
+    pub fn getTimeStanding(msg: SessionMessage) ?f32 {
+        return msg.time_standing;
+    }
+
+    /// Number of transitions to the standing state
+    pub fn getStandCount(msg: SessionMessage) ?u16 {
+        return msg.stand_count;
+    }
+
+    /// Average platform center offset Left
+    pub fn getAvgLeftPco(msg: SessionMessage) ?i8 {
+        return msg.avg_left_pco;
+    }
+
+    /// Average platform center offset Right
+    pub fn getAvgRightPco(msg: SessionMessage) ?i8 {
+        return msg.avg_right_pco;
+    }
+
+    /// Average left power phase angles. Indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhase(msg: SessionMessage) ?[]f32 {
+        return msg.avg_left_power_phase;
+    }
+
+    /// Average left power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhasePeak(msg: SessionMessage) ?[]f32 {
+        return msg.avg_left_power_phase_peak;
+    }
+
+    /// Average right power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhase(msg: SessionMessage) ?[]f32 {
+        return msg.avg_right_power_phase;
+    }
+
+    /// Average right power phase peak angles data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhasePeak(msg: SessionMessage) ?[]f32 {
+        return msg.avg_right_power_phase_peak;
+    }
+
+    /// Average power by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgPowerPosition(msg: SessionMessage) ?[]u16 {
+        return msg.avg_power_position;
+    }
+
+    /// Maximum power by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxPowerPosition(msg: SessionMessage) ?[]u16 {
+        return msg.max_power_position;
+    }
+
+    /// Average cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgCadencePosition(msg: SessionMessage) ?[]u8 {
+        return msg.avg_cadence_position;
+    }
+
+    /// Maximum cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxCadencePosition(msg: SessionMessage) ?[]u8 {
+        return msg.max_cadence_position;
+    }
+
+    /// total_distance / total_timer_time
+    pub fn getEnhancedAvgSpeed(msg: SessionMessage) ?f32 {
+        return msg.enhanced_avg_speed;
+    }
+
+    pub fn getEnhancedMaxSpeed(msg: SessionMessage) ?f32 {
+        return msg.enhanced_max_speed;
+    }
+
+    pub fn getEnhancedAvgAltitude(msg: SessionMessage) ?f32 {
+        return msg.enhanced_avg_altitude;
+    }
+
+    pub fn getEnhancedMinAltitude(msg: SessionMessage) ?f32 {
+        return msg.enhanced_min_altitude;
+    }
+
+    pub fn getEnhancedMaxAltitude(msg: SessionMessage) ?f32 {
+        return msg.enhanced_max_altitude;
+    }
+
+    /// lev average motor power during session
+    pub fn getAvgLevMotorPower(msg: SessionMessage) ?u16 {
+        return msg.avg_lev_motor_power;
+    }
+
+    /// lev maximum motor power during session
+    pub fn getMaxLevMotorPower(msg: SessionMessage) ?u16 {
+        return msg.max_lev_motor_power;
+    }
+
+    /// lev battery consumption during session
+    pub fn getLevBatteryConsumption(msg: SessionMessage) ?f32 {
+        return msg.lev_battery_consumption;
+    }
+
+    pub fn getAvgVerticalRatio(msg: SessionMessage) ?f32 {
+        return msg.avg_vertical_ratio;
+    }
+
+    pub fn getAvgStanceTimeBalance(msg: SessionMessage) ?f32 {
+        return msg.avg_stance_time_balance;
+    }
+
+    pub fn getAvgStepLength(msg: SessionMessage) ?f32 {
+        return msg.avg_step_length;
+    }
+
+    pub fn getTotalAnaerobicTrainingEffect(msg: SessionMessage) ?f32 {
+        return msg.total_anaerobic_training_effect;
+    }
+
+    pub fn getAvgVam(msg: SessionMessage) ?f32 {
+        return msg.avg_vam;
+    }
+
+    /// 0 if above water
+    pub fn getAvgDepth(msg: SessionMessage) ?f32 {
+        return msg.avg_depth;
+    }
+
+    /// 0 if above water
+    pub fn getMaxDepth(msg: SessionMessage) ?f32 {
+        return msg.max_depth;
+    }
+
+    /// Time since end of last dive
+    pub fn getSurfaceInterval(msg: SessionMessage) ?f32 {
+        return msg.surface_interval;
+    }
+
+    pub fn getStartCns(msg: SessionMessage) ?f32 {
+        return msg.start_cns;
+    }
+
+    pub fn getEndCns(msg: SessionMessage) ?f32 {
+        return msg.end_cns;
+    }
+
+    pub fn getStartN2(msg: SessionMessage) ?f32 {
+        return msg.start_n2;
+    }
+
+    pub fn getEndN2(msg: SessionMessage) ?f32 {
+        return msg.end_n2;
+    }
+
+    pub fn getAvgRespirationRate(msg: SessionMessage) ?u8 {
+        return msg.avg_respiration_rate;
+    }
+
+    pub fn getMaxRespirationRate(msg: SessionMessage) ?u8 {
+        return msg.max_respiration_rate;
+    }
+
+    pub fn getMinRespirationRate(msg: SessionMessage) ?u8 {
+        return msg.min_respiration_rate;
+    }
+
+    pub fn getMinTemperature(msg: SessionMessage) ?i8 {
+        return msg.min_temperature;
+    }
+
+    pub fn getO2Toxicity(msg: SessionMessage) ?u16 {
+        return msg.o2_toxicity;
+    }
+
+    pub fn getDiveNumber(msg: SessionMessage) ?u32 {
+        return msg.dive_number;
+    }
+
+    pub fn getTrainingLoadPeak(msg: SessionMessage) ?f32 {
+        return msg.training_load_peak;
+    }
+
+    pub fn getEnhancedAvgRespirationRate(msg: SessionMessage) ?f32 {
+        return msg.enhanced_avg_respiration_rate;
+    }
+
+    pub fn getEnhancedMaxRespirationRate(msg: SessionMessage) ?f32 {
+        return msg.enhanced_max_respiration_rate;
+    }
+
+    pub fn getEnhancedMinRespirationRate(msg: SessionMessage) ?f32 {
+        return msg.enhanced_min_respiration_rate;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getTotalGrit(msg: SessionMessage) ?f32 {
+        return msg.total_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getTotalFlow(msg: SessionMessage) ?f32 {
+        return msg.total_flow;
+    }
+
+    pub fn getJumpCount(msg: SessionMessage) ?u16 {
+        return msg.jump_count;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getAvgGrit(msg: SessionMessage) ?f32 {
+        return msg.avg_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getAvgFlow(msg: SessionMessage) ?f32 {
+        return msg.avg_flow;
+    }
+
+    /// A 0-100 scale representing how a user felt while performing a workout. Low values are considered feeling bad, while high values are good.
+    pub fn getWorkoutFeel(msg: SessionMessage) ?u8 {
+        return msg.workout_feel;
+    }
+
+    /// Common Borg CR10 / 0-10 RPE scale, multiplied 10x.. Aggregate score for all workouts in a single session.
+    pub fn getWorkoutRpe(msg: SessionMessage) ?u8 {
+        return msg.workout_rpe;
+    }
+
+    /// Average SPO2 for the monitoring session
+    pub fn getAvgSpo2(msg: SessionMessage) ?u8 {
+        return msg.avg_spo2;
+    }
+
+    /// Average stress for the monitoring session
+    pub fn getAvgStress(msg: SessionMessage) ?u8 {
+        return msg.avg_stress;
+    }
+
+    pub fn getMetabolicCalories(msg: SessionMessage) ?u16 {
+        return msg.metabolic_calories;
+    }
+
+    /// Standard deviation of R-R interval (SDRR) - Heart rate variability measure most useful for wellness users.
+    pub fn getSdrrHrv(msg: SessionMessage) ?u8 {
+        return msg.sdrr_hrv;
+    }
+
+    /// Root mean square successive difference (RMSSD) - Heart rate variability measure most useful for athletes
+    pub fn getRmssdHrv(msg: SessionMessage) ?u8 {
+        return msg.rmssd_hrv;
+    }
+
+    /// fractional part of total_ascent
+    pub fn getTotalFractionalAscent(msg: SessionMessage) ?f32 {
+        return msg.total_fractional_ascent;
+    }
+
+    /// fractional part of total_descent
+    pub fn getTotalFractionalDescent(msg: SessionMessage) ?f32 {
+        return msg.total_fractional_descent;
+    }
+
+    pub fn getAvgCoreTemperature(msg: SessionMessage) ?f32 {
+        return msg.avg_core_temperature;
+    }
+
+    pub fn getMinCoreTemperature(msg: SessionMessage) ?f32 {
+        return msg.min_core_temperature;
+    }
+
+    pub fn getMaxCoreTemperature(msg: SessionMessage) ?f32 {
+        return msg.max_core_temperature;
+    }
 
     pub fn fromRawFields(msg: *SessionMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -8629,6 +10536,530 @@ pub const LapMessage = struct {
     min_core_temperature: ?f32 = null,
     max_core_temperature: ?f32 = null,
 
+    pub fn getMessageIndex(msg: LapMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: LapMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getEvent(msg: LapMessage) ?Event {
+        return msg.event;
+    }
+
+    pub fn getEventType(msg: LapMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    pub fn getStartTime(msg: LapMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getStartPositionLat(msg: LapMessage) ?i32 {
+        return msg.start_position_lat;
+    }
+
+    pub fn getStartPositionLong(msg: LapMessage) ?i32 {
+        return msg.start_position_long;
+    }
+
+    pub fn getEndPositionLat(msg: LapMessage) ?i32 {
+        return msg.end_position_lat;
+    }
+
+    pub fn getEndPositionLong(msg: LapMessage) ?i32 {
+        return msg.end_position_long;
+    }
+
+    /// Time (includes pauses)
+    pub fn getTotalElapsedTime(msg: LapMessage) ?f32 {
+        return msg.total_elapsed_time;
+    }
+
+    /// Timer Time (excludes pauses)
+    pub fn getTotalTimerTime(msg: LapMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalDistance(msg: LapMessage) ?f32 {
+        return msg.total_distance;
+    }
+
+    pub fn getTotalCalories(msg: LapMessage) ?u16 {
+        return msg.total_calories;
+    }
+
+    /// If New Leaf
+    pub fn getTotalFatCalories(msg: LapMessage) ?u16 {
+        return msg.total_fat_calories;
+    }
+
+    pub fn getAvgSpeed(msg: LapMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getMaxSpeed(msg: LapMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    pub fn getAvgHeartRate(msg: LapMessage) ?u8 {
+        return msg.avg_heart_rate;
+    }
+
+    pub fn getMaxHeartRate(msg: LapMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    /// total_power / total_timer_time if non_zero_avg_power otherwise total_power / total_elapsed_time
+    pub fn getAvgPower(msg: LapMessage) ?u16 {
+        return msg.avg_power;
+    }
+
+    pub fn getMaxPower(msg: LapMessage) ?u16 {
+        return msg.max_power;
+    }
+
+    pub fn getTotalAscent(msg: LapMessage) ?u16 {
+        return msg.total_ascent;
+    }
+
+    pub fn getTotalDescent(msg: LapMessage) ?u16 {
+        return msg.total_descent;
+    }
+
+    pub fn getIntensity(msg: LapMessage) ?Intensity {
+        return msg.intensity;
+    }
+
+    pub fn getLapTrigger(msg: LapMessage) ?LapTrigger {
+        return msg.lap_trigger;
+    }
+
+    pub fn getSport(msg: LapMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getEventGroup(msg: LapMessage) ?u8 {
+        return msg.event_group;
+    }
+
+    /// # of lengths of swim pool
+    pub fn getNumLengths(msg: LapMessage) ?u16 {
+        return msg.num_lengths;
+    }
+
+    pub fn getNormalizedPower(msg: LapMessage) ?u16 {
+        return msg.normalized_power;
+    }
+
+    pub fn getLeftRightBalance(msg: LapMessage) ?LeftRightBalance100 {
+        return msg.left_right_balance;
+    }
+
+    pub fn getFirstLengthIndex(msg: LapMessage) ?u16 {
+        return msg.first_length_index;
+    }
+
+    pub fn getAvgStrokeDistance(msg: LapMessage) ?f32 {
+        return msg.avg_stroke_distance;
+    }
+
+    pub fn getSwimStroke(msg: LapMessage) ?SwimStroke {
+        return msg.swim_stroke;
+    }
+
+    pub fn getSubSport(msg: LapMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    /// # of active lengths of swim pool
+    pub fn getNumActiveLengths(msg: LapMessage) ?u16 {
+        return msg.num_active_lengths;
+    }
+
+    pub fn getTotalWork(msg: LapMessage) ?u32 {
+        return msg.total_work;
+    }
+
+    pub fn getAvgAltitude(msg: LapMessage) ?f32 {
+        return msg.avg_altitude;
+    }
+
+    pub fn getMaxAltitude(msg: LapMessage) ?f32 {
+        return msg.max_altitude;
+    }
+
+    pub fn getGpsAccuracy(msg: LapMessage) ?u8 {
+        return msg.gps_accuracy;
+    }
+
+    pub fn getAvgGrade(msg: LapMessage) ?f32 {
+        return msg.avg_grade;
+    }
+
+    pub fn getAvgPosGrade(msg: LapMessage) ?f32 {
+        return msg.avg_pos_grade;
+    }
+
+    pub fn getAvgNegGrade(msg: LapMessage) ?f32 {
+        return msg.avg_neg_grade;
+    }
+
+    pub fn getMaxPosGrade(msg: LapMessage) ?f32 {
+        return msg.max_pos_grade;
+    }
+
+    pub fn getMaxNegGrade(msg: LapMessage) ?f32 {
+        return msg.max_neg_grade;
+    }
+
+    pub fn getAvgTemperature(msg: LapMessage) ?i8 {
+        return msg.avg_temperature;
+    }
+
+    pub fn getMaxTemperature(msg: LapMessage) ?i8 {
+        return msg.max_temperature;
+    }
+
+    pub fn getTotalMovingTime(msg: LapMessage) ?f32 {
+        return msg.total_moving_time;
+    }
+
+    pub fn getAvgPosVerticalSpeed(msg: LapMessage) ?f32 {
+        return msg.avg_pos_vertical_speed;
+    }
+
+    pub fn getAvgNegVerticalSpeed(msg: LapMessage) ?f32 {
+        return msg.avg_neg_vertical_speed;
+    }
+
+    pub fn getMaxPosVerticalSpeed(msg: LapMessage) ?f32 {
+        return msg.max_pos_vertical_speed;
+    }
+
+    pub fn getMaxNegVerticalSpeed(msg: LapMessage) ?f32 {
+        return msg.max_neg_vertical_speed;
+    }
+
+    pub fn getTimeInHrZone(msg: LapMessage) ?[]f32 {
+        return msg.time_in_hr_zone;
+    }
+
+    pub fn getTimeInSpeedZone(msg: LapMessage) ?[]f32 {
+        return msg.time_in_speed_zone;
+    }
+
+    pub fn getTimeInCadenceZone(msg: LapMessage) ?[]f32 {
+        return msg.time_in_cadence_zone;
+    }
+
+    pub fn getTimeInPowerZone(msg: LapMessage) ?[]f32 {
+        return msg.time_in_power_zone;
+    }
+
+    pub fn getRepetitionNum(msg: LapMessage) ?u16 {
+        return msg.repetition_num;
+    }
+
+    pub fn getMinAltitude(msg: LapMessage) ?f32 {
+        return msg.min_altitude;
+    }
+
+    pub fn getMinHeartRate(msg: LapMessage) ?u8 {
+        return msg.min_heart_rate;
+    }
+
+    pub fn getActiveTime(msg: LapMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getWktStepIndex(msg: LapMessage) ?MessageIndex {
+        return msg.wkt_step_index;
+    }
+
+    pub fn getOpponentScore(msg: LapMessage) ?u16 {
+        return msg.opponent_score;
+    }
+
+    /// stroke_type enum used as the index
+    pub fn getStrokeCount(msg: LapMessage) ?[]u16 {
+        return msg.stroke_count;
+    }
+
+    /// zone number used as the index
+    pub fn getZoneCount(msg: LapMessage) ?[]u16 {
+        return msg.zone_count;
+    }
+
+    pub fn getAvgVerticalOscillation(msg: LapMessage) ?f32 {
+        return msg.avg_vertical_oscillation;
+    }
+
+    pub fn getAvgStanceTimePercent(msg: LapMessage) ?f32 {
+        return msg.avg_stance_time_percent;
+    }
+
+    pub fn getAvgStanceTime(msg: LapMessage) ?f32 {
+        return msg.avg_stance_time;
+    }
+
+    /// fractional part of the avg_cadence
+    pub fn getAvgFractionalCadence(msg: LapMessage) ?f32 {
+        return msg.avg_fractional_cadence;
+    }
+
+    /// fractional part of the max_cadence
+    pub fn getMaxFractionalCadence(msg: LapMessage) ?f32 {
+        return msg.max_fractional_cadence;
+    }
+
+    /// fractional part of the total_cycles
+    pub fn getTotalFractionalCycles(msg: LapMessage) ?f32 {
+        return msg.total_fractional_cycles;
+    }
+
+    pub fn getPlayerScore(msg: LapMessage) ?u16 {
+        return msg.player_score;
+    }
+
+    /// Avg saturated and unsaturated hemoglobin
+    pub fn getAvgTotalHemoglobinConc(msg: LapMessage) ?[]f32 {
+        return msg.avg_total_hemoglobin_conc;
+    }
+
+    /// Min saturated and unsaturated hemoglobin
+    pub fn getMinTotalHemoglobinConc(msg: LapMessage) ?[]f32 {
+        return msg.min_total_hemoglobin_conc;
+    }
+
+    /// Max saturated and unsaturated hemoglobin
+    pub fn getMaxTotalHemoglobinConc(msg: LapMessage) ?[]f32 {
+        return msg.max_total_hemoglobin_conc;
+    }
+
+    /// Avg percentage of hemoglobin saturated with oxygen
+    pub fn getAvgSaturatedHemoglobinPercent(msg: LapMessage) ?[]f32 {
+        return msg.avg_saturated_hemoglobin_percent;
+    }
+
+    /// Min percentage of hemoglobin saturated with oxygen
+    pub fn getMinSaturatedHemoglobinPercent(msg: LapMessage) ?[]f32 {
+        return msg.min_saturated_hemoglobin_percent;
+    }
+
+    /// Max percentage of hemoglobin saturated with oxygen
+    pub fn getMaxSaturatedHemoglobinPercent(msg: LapMessage) ?[]f32 {
+        return msg.max_saturated_hemoglobin_percent;
+    }
+
+    pub fn getAvgLeftTorqueEffectiveness(msg: LapMessage) ?f32 {
+        return msg.avg_left_torque_effectiveness;
+    }
+
+    pub fn getAvgRightTorqueEffectiveness(msg: LapMessage) ?f32 {
+        return msg.avg_right_torque_effectiveness;
+    }
+
+    pub fn getAvgLeftPedalSmoothness(msg: LapMessage) ?f32 {
+        return msg.avg_left_pedal_smoothness;
+    }
+
+    pub fn getAvgRightPedalSmoothness(msg: LapMessage) ?f32 {
+        return msg.avg_right_pedal_smoothness;
+    }
+
+    pub fn getAvgCombinedPedalSmoothness(msg: LapMessage) ?f32 {
+        return msg.avg_combined_pedal_smoothness;
+    }
+
+    /// Total time spent in the standing position
+    pub fn getTimeStanding(msg: LapMessage) ?f32 {
+        return msg.time_standing;
+    }
+
+    /// Number of transitions to the standing state
+    pub fn getStandCount(msg: LapMessage) ?u16 {
+        return msg.stand_count;
+    }
+
+    /// Average left platform center offset
+    pub fn getAvgLeftPco(msg: LapMessage) ?i8 {
+        return msg.avg_left_pco;
+    }
+
+    /// Average right platform center offset
+    pub fn getAvgRightPco(msg: LapMessage) ?i8 {
+        return msg.avg_right_pco;
+    }
+
+    /// Average left power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhase(msg: LapMessage) ?[]f32 {
+        return msg.avg_left_power_phase;
+    }
+
+    /// Average left power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhasePeak(msg: LapMessage) ?[]f32 {
+        return msg.avg_left_power_phase_peak;
+    }
+
+    /// Average right power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhase(msg: LapMessage) ?[]f32 {
+        return msg.avg_right_power_phase;
+    }
+
+    /// Average right power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhasePeak(msg: LapMessage) ?[]f32 {
+        return msg.avg_right_power_phase_peak;
+    }
+
+    /// Average power by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgPowerPosition(msg: LapMessage) ?[]u16 {
+        return msg.avg_power_position;
+    }
+
+    /// Maximum power by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxPowerPosition(msg: LapMessage) ?[]u16 {
+        return msg.max_power_position;
+    }
+
+    /// Average cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgCadencePosition(msg: LapMessage) ?[]u8 {
+        return msg.avg_cadence_position;
+    }
+
+    /// Maximum cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxCadencePosition(msg: LapMessage) ?[]u8 {
+        return msg.max_cadence_position;
+    }
+
+    pub fn getEnhancedAvgSpeed(msg: LapMessage) ?f32 {
+        return msg.enhanced_avg_speed;
+    }
+
+    pub fn getEnhancedMaxSpeed(msg: LapMessage) ?f32 {
+        return msg.enhanced_max_speed;
+    }
+
+    pub fn getEnhancedAvgAltitude(msg: LapMessage) ?f32 {
+        return msg.enhanced_avg_altitude;
+    }
+
+    pub fn getEnhancedMinAltitude(msg: LapMessage) ?f32 {
+        return msg.enhanced_min_altitude;
+    }
+
+    pub fn getEnhancedMaxAltitude(msg: LapMessage) ?f32 {
+        return msg.enhanced_max_altitude;
+    }
+
+    /// lev average motor power during lap
+    pub fn getAvgLevMotorPower(msg: LapMessage) ?u16 {
+        return msg.avg_lev_motor_power;
+    }
+
+    /// lev maximum motor power during lap
+    pub fn getMaxLevMotorPower(msg: LapMessage) ?u16 {
+        return msg.max_lev_motor_power;
+    }
+
+    /// lev battery consumption during lap
+    pub fn getLevBatteryConsumption(msg: LapMessage) ?f32 {
+        return msg.lev_battery_consumption;
+    }
+
+    pub fn getAvgVerticalRatio(msg: LapMessage) ?f32 {
+        return msg.avg_vertical_ratio;
+    }
+
+    pub fn getAvgStanceTimeBalance(msg: LapMessage) ?f32 {
+        return msg.avg_stance_time_balance;
+    }
+
+    pub fn getAvgStepLength(msg: LapMessage) ?f32 {
+        return msg.avg_step_length;
+    }
+
+    pub fn getAvgVam(msg: LapMessage) ?f32 {
+        return msg.avg_vam;
+    }
+
+    /// 0 if above water
+    pub fn getAvgDepth(msg: LapMessage) ?f32 {
+        return msg.avg_depth;
+    }
+
+    /// 0 if above water
+    pub fn getMaxDepth(msg: LapMessage) ?f32 {
+        return msg.max_depth;
+    }
+
+    pub fn getMinTemperature(msg: LapMessage) ?i8 {
+        return msg.min_temperature;
+    }
+
+    pub fn getEnhancedAvgRespirationRate(msg: LapMessage) ?f32 {
+        return msg.enhanced_avg_respiration_rate;
+    }
+
+    pub fn getEnhancedMaxRespirationRate(msg: LapMessage) ?f32 {
+        return msg.enhanced_max_respiration_rate;
+    }
+
+    pub fn getAvgRespirationRate(msg: LapMessage) ?u8 {
+        return msg.avg_respiration_rate;
+    }
+
+    pub fn getMaxRespirationRate(msg: LapMessage) ?u8 {
+        return msg.max_respiration_rate;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getTotalGrit(msg: LapMessage) ?f32 {
+        return msg.total_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getTotalFlow(msg: LapMessage) ?f32 {
+        return msg.total_flow;
+    }
+
+    pub fn getJumpCount(msg: LapMessage) ?u16 {
+        return msg.jump_count;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getAvgGrit(msg: LapMessage) ?f32 {
+        return msg.avg_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getAvgFlow(msg: LapMessage) ?f32 {
+        return msg.avg_flow;
+    }
+
+    /// fractional part of total_ascent
+    pub fn getTotalFractionalAscent(msg: LapMessage) ?f32 {
+        return msg.total_fractional_ascent;
+    }
+
+    /// fractional part of total_descent
+    pub fn getTotalFractionalDescent(msg: LapMessage) ?f32 {
+        return msg.total_fractional_descent;
+    }
+
+    pub fn getAvgCoreTemperature(msg: LapMessage) ?f32 {
+        return msg.avg_core_temperature;
+    }
+
+    pub fn getMinCoreTemperature(msg: LapMessage) ?f32 {
+        return msg.min_core_temperature;
+    }
+
+    pub fn getMaxCoreTemperature(msg: LapMessage) ?f32 {
+        return msg.max_core_temperature;
+    }
+
     pub fn fromRawFields(msg: *LapMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -9337,6 +11768,96 @@ pub const LengthMessage = struct {
     avg_respiration_rate: ?u8 = null,
     max_respiration_rate: ?u8 = null,
 
+    pub fn getMessageIndex(msg: LengthMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: LengthMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getEvent(msg: LengthMessage) ?Event {
+        return msg.event;
+    }
+
+    pub fn getEventType(msg: LengthMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    pub fn getStartTime(msg: LengthMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getTotalElapsedTime(msg: LengthMessage) ?f32 {
+        return msg.total_elapsed_time;
+    }
+
+    pub fn getTotalTimerTime(msg: LengthMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalStrokes(msg: LengthMessage) ?u16 {
+        return msg.total_strokes;
+    }
+
+    pub fn getAvgSpeed(msg: LengthMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getSwimStroke(msg: LengthMessage) ?SwimStroke {
+        return msg.swim_stroke;
+    }
+
+    pub fn getAvgSwimmingCadence(msg: LengthMessage) ?u8 {
+        return msg.avg_swimming_cadence;
+    }
+
+    pub fn getEventGroup(msg: LengthMessage) ?u8 {
+        return msg.event_group;
+    }
+
+    pub fn getTotalCalories(msg: LengthMessage) ?u16 {
+        return msg.total_calories;
+    }
+
+    pub fn getLengthType(msg: LengthMessage) ?LengthType {
+        return msg.length_type;
+    }
+
+    pub fn getPlayerScore(msg: LengthMessage) ?u16 {
+        return msg.player_score;
+    }
+
+    pub fn getOpponentScore(msg: LengthMessage) ?u16 {
+        return msg.opponent_score;
+    }
+
+    /// stroke_type enum used as the index
+    pub fn getStrokeCount(msg: LengthMessage) ?[]u16 {
+        return msg.stroke_count;
+    }
+
+    /// zone number used as the index
+    pub fn getZoneCount(msg: LengthMessage) ?[]u16 {
+        return msg.zone_count;
+    }
+
+    pub fn getEnhancedAvgRespirationRate(msg: LengthMessage) ?f32 {
+        return msg.enhanced_avg_respiration_rate;
+    }
+
+    pub fn getEnhancedMaxRespirationRate(msg: LengthMessage) ?f32 {
+        return msg.enhanced_max_respiration_rate;
+    }
+
+    pub fn getAvgRespirationRate(msg: LengthMessage) ?u8 {
+        return msg.avg_respiration_rate;
+    }
+
+    pub fn getMaxRespirationRate(msg: LengthMessage) ?u8 {
+        return msg.max_respiration_rate;
+    }
+
     pub fn fromRawFields(msg: *LengthMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -9567,6 +12088,366 @@ pub const RecordMessage = struct {
     /// Current partial pressure of oxygen
     po2: ?f32 = null,
     core_temperature: ?f32 = null,
+
+    pub fn getTimestamp(msg: RecordMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getPositionLat(msg: RecordMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: RecordMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    pub fn getAltitude(msg: RecordMessage) ?f32 {
+        return msg.altitude;
+    }
+
+    pub fn getHeartRate(msg: RecordMessage) ?u8 {
+        return msg.heart_rate;
+    }
+
+    pub fn getCadence(msg: RecordMessage) ?u8 {
+        return msg.cadence;
+    }
+
+    pub fn getDistance(msg: RecordMessage) ?f32 {
+        return msg.distance;
+    }
+
+    pub fn getSpeed(msg: RecordMessage) ?f32 {
+        return msg.speed;
+    }
+
+    pub fn getPower(msg: RecordMessage) ?u16 {
+        return msg.power;
+    }
+
+    pub fn getGrade(msg: RecordMessage) ?f32 {
+        return msg.grade;
+    }
+
+    /// Relative. 0 is none 254 is Max.
+    pub fn getResistance(msg: RecordMessage) ?u8 {
+        return msg.resistance;
+    }
+
+    pub fn getTimeFromCourse(msg: RecordMessage) ?f32 {
+        return msg.time_from_course;
+    }
+
+    pub fn getCycleLength(msg: RecordMessage) ?f32 {
+        return msg.cycle_length;
+    }
+
+    pub fn getTemperature(msg: RecordMessage) ?i8 {
+        return msg.temperature;
+    }
+
+    /// Speed at 1s intervals. Timestamp field indicates time of last array element.
+    pub fn getSpeed1s(msg: RecordMessage) ?[]f32 {
+        return msg.speed_1s;
+    }
+
+    pub fn getCycles(msg: RecordMessage) ?u8 {
+        return msg.cycles;
+    }
+
+    pub fn getTotalCycles(msg: RecordMessage) ?u32 {
+        return msg.total_cycles;
+    }
+
+    pub fn getCompressedAccumulatedPower(msg: RecordMessage) ?u16 {
+        return msg.compressed_accumulated_power;
+    }
+
+    pub fn getAccumulatedPower(msg: RecordMessage) ?u32 {
+        return msg.accumulated_power;
+    }
+
+    pub fn getLeftRightBalance(msg: RecordMessage) ?LeftRightBalance {
+        return msg.left_right_balance;
+    }
+
+    pub fn getGpsAccuracy(msg: RecordMessage) ?u8 {
+        return msg.gps_accuracy;
+    }
+
+    pub fn getVerticalSpeed(msg: RecordMessage) ?f32 {
+        return msg.vertical_speed;
+    }
+
+    pub fn getCalories(msg: RecordMessage) ?u16 {
+        return msg.calories;
+    }
+
+    pub fn getVerticalOscillation(msg: RecordMessage) ?f32 {
+        return msg.vertical_oscillation;
+    }
+
+    pub fn getStanceTimePercent(msg: RecordMessage) ?f32 {
+        return msg.stance_time_percent;
+    }
+
+    pub fn getStanceTime(msg: RecordMessage) ?f32 {
+        return msg.stance_time;
+    }
+
+    pub fn getActivityType(msg: RecordMessage) ?ActivityType {
+        return msg.activity_type;
+    }
+
+    pub fn getLeftTorqueEffectiveness(msg: RecordMessage) ?f32 {
+        return msg.left_torque_effectiveness;
+    }
+
+    pub fn getRightTorqueEffectiveness(msg: RecordMessage) ?f32 {
+        return msg.right_torque_effectiveness;
+    }
+
+    pub fn getLeftPedalSmoothness(msg: RecordMessage) ?f32 {
+        return msg.left_pedal_smoothness;
+    }
+
+    pub fn getRightPedalSmoothness(msg: RecordMessage) ?f32 {
+        return msg.right_pedal_smoothness;
+    }
+
+    pub fn getCombinedPedalSmoothness(msg: RecordMessage) ?f32 {
+        return msg.combined_pedal_smoothness;
+    }
+
+    pub fn getTime128(msg: RecordMessage) ?f32 {
+        return msg.time128;
+    }
+
+    pub fn getStrokeType(msg: RecordMessage) ?StrokeType {
+        return msg.stroke_type;
+    }
+
+    pub fn getZone(msg: RecordMessage) ?u8 {
+        return msg.zone;
+    }
+
+    pub fn getBallSpeed(msg: RecordMessage) ?f32 {
+        return msg.ball_speed;
+    }
+
+    /// Log cadence and fractional cadence for backwards compatability
+    pub fn getCadence256(msg: RecordMessage) ?f32 {
+        return msg.cadence256;
+    }
+
+    pub fn getFractionalCadence(msg: RecordMessage) ?f32 {
+        return msg.fractional_cadence;
+    }
+
+    /// Total saturated and unsaturated hemoglobin
+    pub fn getTotalHemoglobinConc(msg: RecordMessage) ?f32 {
+        return msg.total_hemoglobin_conc;
+    }
+
+    /// Min saturated and unsaturated hemoglobin
+    pub fn getTotalHemoglobinConcMin(msg: RecordMessage) ?f32 {
+        return msg.total_hemoglobin_conc_min;
+    }
+
+    /// Max saturated and unsaturated hemoglobin
+    pub fn getTotalHemoglobinConcMax(msg: RecordMessage) ?f32 {
+        return msg.total_hemoglobin_conc_max;
+    }
+
+    /// Percentage of hemoglobin saturated with oxygen
+    pub fn getSaturatedHemoglobinPercent(msg: RecordMessage) ?f32 {
+        return msg.saturated_hemoglobin_percent;
+    }
+
+    /// Min percentage of hemoglobin saturated with oxygen
+    pub fn getSaturatedHemoglobinPercentMin(msg: RecordMessage) ?f32 {
+        return msg.saturated_hemoglobin_percent_min;
+    }
+
+    /// Max percentage of hemoglobin saturated with oxygen
+    pub fn getSaturatedHemoglobinPercentMax(msg: RecordMessage) ?f32 {
+        return msg.saturated_hemoglobin_percent_max;
+    }
+
+    pub fn getDeviceIndex(msg: RecordMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
+
+    /// Left platform center offset
+    pub fn getLeftPco(msg: RecordMessage) ?i8 {
+        return msg.left_pco;
+    }
+
+    /// Right platform center offset
+    pub fn getRightPco(msg: RecordMessage) ?i8 {
+        return msg.right_pco;
+    }
+
+    /// Left power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getLeftPowerPhase(msg: RecordMessage) ?[]f32 {
+        return msg.left_power_phase;
+    }
+
+    /// Left power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getLeftPowerPhasePeak(msg: RecordMessage) ?[]f32 {
+        return msg.left_power_phase_peak;
+    }
+
+    /// Right power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getRightPowerPhase(msg: RecordMessage) ?[]f32 {
+        return msg.right_power_phase;
+    }
+
+    /// Right power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getRightPowerPhasePeak(msg: RecordMessage) ?[]f32 {
+        return msg.right_power_phase_peak;
+    }
+
+    pub fn getEnhancedSpeed(msg: RecordMessage) ?f32 {
+        return msg.enhanced_speed;
+    }
+
+    pub fn getEnhancedAltitude(msg: RecordMessage) ?f32 {
+        return msg.enhanced_altitude;
+    }
+
+    /// lev battery state of charge
+    pub fn getBatterySoc(msg: RecordMessage) ?f32 {
+        return msg.battery_soc;
+    }
+
+    /// lev motor power
+    pub fn getMotorPower(msg: RecordMessage) ?u16 {
+        return msg.motor_power;
+    }
+
+    pub fn getVerticalRatio(msg: RecordMessage) ?f32 {
+        return msg.vertical_ratio;
+    }
+
+    pub fn getStanceTimeBalance(msg: RecordMessage) ?f32 {
+        return msg.stance_time_balance;
+    }
+
+    pub fn getStepLength(msg: RecordMessage) ?f32 {
+        return msg.step_length;
+    }
+
+    /// Supports larger cycle sizes needed for paddlesports. Max cycle size: 655.35
+    pub fn getCycleLength16(msg: RecordMessage) ?f32 {
+        return msg.cycle_length16;
+    }
+
+    /// Includes atmospheric pressure
+    pub fn getAbsolutePressure(msg: RecordMessage) ?u32 {
+        return msg.absolute_pressure;
+    }
+
+    /// 0 if above water
+    pub fn getDepth(msg: RecordMessage) ?f32 {
+        return msg.depth;
+    }
+
+    /// 0 if above water
+    pub fn getNextStopDepth(msg: RecordMessage) ?f32 {
+        return msg.next_stop_depth;
+    }
+
+    pub fn getNextStopTime(msg: RecordMessage) ?f32 {
+        return msg.next_stop_time;
+    }
+
+    pub fn getTimeToSurface(msg: RecordMessage) ?f32 {
+        return msg.time_to_surface;
+    }
+
+    pub fn getNdlTime(msg: RecordMessage) ?f32 {
+        return msg.ndl_time;
+    }
+
+    pub fn getCnsLoad(msg: RecordMessage) ?u8 {
+        return msg.cns_load;
+    }
+
+    pub fn getN2Load(msg: RecordMessage) ?f32 {
+        return msg.n2_load;
+    }
+
+    pub fn getRespirationRate(msg: RecordMessage) ?f32 {
+        return msg.respiration_rate;
+    }
+
+    pub fn getEnhancedRespirationRate(msg: RecordMessage) ?f32 {
+        return msg.enhanced_respiration_rate;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getGrit(msg: RecordMessage) ?f32 {
+        return msg.grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getFlow(msg: RecordMessage) ?f32 {
+        return msg.flow;
+    }
+
+    /// Current Stress value
+    pub fn getCurrentStress(msg: RecordMessage) ?f32 {
+        return msg.current_stress;
+    }
+
+    pub fn getEbikeTravelRange(msg: RecordMessage) ?u16 {
+        return msg.ebike_travel_range;
+    }
+
+    pub fn getEbikeBatteryLevel(msg: RecordMessage) ?u8 {
+        return msg.ebike_battery_level;
+    }
+
+    pub fn getEbikeAssistMode(msg: RecordMessage) ?u8 {
+        return msg.ebike_assist_mode;
+    }
+
+    pub fn getEbikeAssistLevelPercent(msg: RecordMessage) ?u8 {
+        return msg.ebike_assist_level_percent;
+    }
+
+    pub fn getAirTimeRemaining(msg: RecordMessage) ?u32 {
+        return msg.air_time_remaining;
+    }
+
+    /// Pressure-based surface air consumption
+    pub fn getPressureSac(msg: RecordMessage) ?f32 {
+        return msg.pressure_sac;
+    }
+
+    /// Volumetric surface air consumption
+    pub fn getVolumeSac(msg: RecordMessage) ?f32 {
+        return msg.volume_sac;
+    }
+
+    /// Respiratory minute volume
+    pub fn getRmv(msg: RecordMessage) ?f32 {
+        return msg.rmv;
+    }
+
+    pub fn getAscentRate(msg: RecordMessage) ?f32 {
+        return msg.ascent_rate;
+    }
+
+    /// Current partial pressure of oxygen
+    pub fn getPo2(msg: RecordMessage) ?f32 {
+        return msg.po2;
+    }
+
+    pub fn getCoreTemperature(msg: RecordMessage) ?f32 {
+        return msg.core_temperature;
+    }
 
     pub fn fromRawFields(msg: *RecordMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -10028,6 +12909,85 @@ pub const EventMessage = struct {
     /// Do not populate directly. Autogenerated by decoder for radar_threat_alert subfield components
     radar_threat_max_approach_speed: ?f32 = null,
 
+    pub fn getTimestamp(msg: EventMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getEvent(msg: EventMessage) ?Event {
+        return msg.event;
+    }
+
+    pub fn getEventType(msg: EventMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    pub fn getData16(msg: EventMessage) ?u16 {
+        return msg.data16;
+    }
+
+    pub fn getEventGroup(msg: EventMessage) ?u8 {
+        return msg.event_group;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for sport_point subfield components
+    pub fn getScore(msg: EventMessage) ?u16 {
+        return msg.score;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for sport_point subfield components
+    pub fn getOpponentScore(msg: EventMessage) ?u16 {
+        return msg.opponent_score;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for gear_change subfield components. Front gear number. 1 is innermost.
+    pub fn getFrontGearNum(msg: EventMessage) ?u8 {
+        return msg.front_gear_num;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for gear_change subfield components. Number of front teeth.
+    pub fn getFrontGear(msg: EventMessage) ?u8 {
+        return msg.front_gear;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for gear_change subfield components. Rear gear number. 1 is innermost.
+    pub fn getRearGearNum(msg: EventMessage) ?u8 {
+        return msg.rear_gear_num;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for gear_change subfield components. Number of rear teeth.
+    pub fn getRearGear(msg: EventMessage) ?u8 {
+        return msg.rear_gear;
+    }
+
+    pub fn getDeviceIndex(msg: EventMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
+
+    /// Activity Type associated with an auto_activity_detect event
+    pub fn getActivityType(msg: EventMessage) ?ActivityType {
+        return msg.activity_type;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for threat_alert subfield components.
+    pub fn getRadarThreatLevelMax(msg: EventMessage) ?RadarThreatLevelType {
+        return msg.radar_threat_level_max;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for threat_alert subfield components.
+    pub fn getRadarThreatCount(msg: EventMessage) ?u8 {
+        return msg.radar_threat_count;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for radar_threat_alert subfield components
+    pub fn getRadarThreatAvgApproachSpeed(msg: EventMessage) ?f32 {
+        return msg.radar_threat_avg_approach_speed;
+    }
+
+    /// Do not populate directly. Autogenerated by decoder for radar_threat_alert subfield components
+    pub fn getRadarThreatMaxApproachSpeed(msg: EventMessage) ?f32 {
+        return msg.radar_threat_max_approach_speed;
+    }
+
     pub fn fromRawFields(msg: *EventMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10131,6 +13091,78 @@ pub const DeviceInfoMessage = struct {
     product_name: ?[:0]u8 = null,
     battery_level: ?u8 = null,
 
+    pub fn getTimestamp(msg: DeviceInfoMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getDeviceIndex(msg: DeviceInfoMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
+
+    pub fn getManufacturer(msg: DeviceInfoMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
+    pub fn getSerialNumber(msg: DeviceInfoMessage) ?u32 {
+        return msg.serial_number;
+    }
+
+    pub fn getSoftwareVersion(msg: DeviceInfoMessage) ?f32 {
+        return msg.software_version;
+    }
+
+    pub fn getHardwareVersion(msg: DeviceInfoMessage) ?u8 {
+        return msg.hardware_version;
+    }
+
+    /// Reset by new battery or charge.
+    pub fn getCumOperatingTime(msg: DeviceInfoMessage) ?u32 {
+        return msg.cum_operating_time;
+    }
+
+    pub fn getBatteryVoltage(msg: DeviceInfoMessage) ?f32 {
+        return msg.battery_voltage;
+    }
+
+    pub fn getBatteryStatus(msg: DeviceInfoMessage) ?BatteryStatus {
+        return msg.battery_status;
+    }
+
+    /// Indicates the location of the sensor
+    pub fn getSensorPosition(msg: DeviceInfoMessage) ?BodyLocation {
+        return msg.sensor_position;
+    }
+
+    /// Used to describe the sensor or location
+    pub fn getDescriptor(msg: DeviceInfoMessage) ?[:0]u8 {
+        return msg.descriptor;
+    }
+
+    pub fn getAntTransmissionType(msg: DeviceInfoMessage) ?u8 {
+        return msg.ant_transmission_type;
+    }
+
+    pub fn getAntDeviceNumber(msg: DeviceInfoMessage) ?u16 {
+        return msg.ant_device_number;
+    }
+
+    pub fn getAntNetwork(msg: DeviceInfoMessage) ?AntNetwork {
+        return msg.ant_network;
+    }
+
+    pub fn getSourceType(msg: DeviceInfoMessage) ?SourceType {
+        return msg.source_type;
+    }
+
+    /// Optional free form string to indicate the devices name or model
+    pub fn getProductName(msg: DeviceInfoMessage) ?[:0]u8 {
+        return msg.product_name;
+    }
+
+    pub fn getBatteryLevel(msg: DeviceInfoMessage) ?u8 {
+        return msg.battery_level;
+    }
+
     pub fn fromRawFields(msg: *DeviceInfoMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10227,6 +13259,26 @@ pub const DeviceAuxBatteryInfoMessage = struct {
     battery_status: ?BatteryStatus = null,
     battery_identifier: ?u8 = null,
 
+    pub fn getTimestamp(msg: DeviceAuxBatteryInfoMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getDeviceIndex(msg: DeviceAuxBatteryInfoMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
+
+    pub fn getBatteryVoltage(msg: DeviceAuxBatteryInfoMessage) ?f32 {
+        return msg.battery_voltage;
+    }
+
+    pub fn getBatteryStatus(msg: DeviceAuxBatteryInfoMessage) ?BatteryStatus {
+        return msg.battery_status;
+    }
+
+    pub fn getBatteryIdentifier(msg: DeviceAuxBatteryInfoMessage) ?u8 {
+        return msg.battery_identifier;
+    }
+
     pub fn fromRawFields(msg: *DeviceAuxBatteryInfoMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10265,6 +13317,26 @@ pub const TrainingFileMessage = struct {
     manufacturer: ?Manufacturer = null,
     serial_number: ?u32 = null,
     time_created: ?u32 = null,
+
+    pub fn getTimestamp(msg: TrainingFileMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getType(msg: TrainingFileMessage) ?File {
+        return msg.type;
+    }
+
+    pub fn getManufacturer(msg: TrainingFileMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
+    pub fn getSerialNumber(msg: TrainingFileMessage) ?u32 {
+        return msg.serial_number;
+    }
+
+    pub fn getTimeCreated(msg: TrainingFileMessage) ?u32 {
+        return msg.time_created;
+    }
 
     pub fn fromRawFields(msg: *TrainingFileMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -10319,6 +13391,76 @@ pub const WeatherConditionsMessage = struct {
     day_of_week: ?DayOfWeek = null,
     high_temperature: ?i8 = null,
     low_temperature: ?i8 = null,
+
+    /// time of update for current conditions, else forecast time
+    pub fn getTimestamp(msg: WeatherConditionsMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Current or forecast
+    pub fn getWeatherReport(msg: WeatherConditionsMessage) ?WeatherReport {
+        return msg.weather_report;
+    }
+
+    pub fn getTemperature(msg: WeatherConditionsMessage) ?i8 {
+        return msg.temperature;
+    }
+
+    /// Corresponds to GSC Response weatherIcon field
+    pub fn getCondition(msg: WeatherConditionsMessage) ?WeatherStatus {
+        return msg.condition;
+    }
+
+    pub fn getWindDirection(msg: WeatherConditionsMessage) ?u16 {
+        return msg.wind_direction;
+    }
+
+    pub fn getWindSpeed(msg: WeatherConditionsMessage) ?f32 {
+        return msg.wind_speed;
+    }
+
+    /// range 0-100
+    pub fn getPrecipitationProbability(msg: WeatherConditionsMessage) ?u8 {
+        return msg.precipitation_probability;
+    }
+
+    /// Heat Index if GCS heatIdx above or equal to 90F or wind chill if GCS windChill below or equal to 32F
+    pub fn getTemperatureFeelsLike(msg: WeatherConditionsMessage) ?i8 {
+        return msg.temperature_feels_like;
+    }
+
+    pub fn getRelativeHumidity(msg: WeatherConditionsMessage) ?u8 {
+        return msg.relative_humidity;
+    }
+
+    /// string corresponding to GCS response location string
+    pub fn getLocation(msg: WeatherConditionsMessage) ?[:0]u8 {
+        return msg.location;
+    }
+
+    pub fn getObservedAtTime(msg: WeatherConditionsMessage) ?u32 {
+        return msg.observed_at_time;
+    }
+
+    pub fn getObservedLocationLat(msg: WeatherConditionsMessage) ?i32 {
+        return msg.observed_location_lat;
+    }
+
+    pub fn getObservedLocationLong(msg: WeatherConditionsMessage) ?i32 {
+        return msg.observed_location_long;
+    }
+
+    pub fn getDayOfWeek(msg: WeatherConditionsMessage) ?DayOfWeek {
+        return msg.day_of_week;
+    }
+
+    pub fn getHighTemperature(msg: WeatherConditionsMessage) ?i8 {
+        return msg.high_temperature;
+    }
+
+    pub fn getLowTemperature(msg: WeatherConditionsMessage) ?i8 {
+        return msg.low_temperature;
+    }
 
     pub fn fromRawFields(msg: *WeatherConditionsMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -10414,6 +13556,35 @@ pub const WeatherAlertMessage = struct {
     /// Tornado, Severe Thunderstorm, etc.
     type: ?WeatherSevereType = null,
 
+    pub fn getTimestamp(msg: WeatherAlertMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Unique identifier from GCS report ID string, length is 12
+    pub fn getReportId(msg: WeatherAlertMessage) ?[:0]u8 {
+        return msg.report_id;
+    }
+
+    /// Time alert was issued
+    pub fn getIssueTime(msg: WeatherAlertMessage) ?u32 {
+        return msg.issue_time;
+    }
+
+    /// Time alert expires
+    pub fn getExpireTime(msg: WeatherAlertMessage) ?u32 {
+        return msg.expire_time;
+    }
+
+    /// Warning, Watch, Advisory, Statement
+    pub fn getSeverity(msg: WeatherAlertMessage) ?WeatherSeverity {
+        return msg.severity;
+    }
+
+    /// Tornado, Severe Thunderstorm, etc.
+    pub fn getType(msg: WeatherAlertMessage) ?WeatherSevereType {
+        return msg.type;
+    }
+
     pub fn fromRawFields(msg: *WeatherAlertMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10468,6 +13639,46 @@ pub const GpsMetadataMessage = struct {
     utc_timestamp: ?u32 = null,
     /// velocity[0] is lon velocity. Velocity[1] is lat velocity. Velocity[2] is altitude velocity.
     velocity: ?[]f32 = null,
+
+    /// Whole second part of the timestamp.
+    pub fn getTimestamp(msg: GpsMetadataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: GpsMetadataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    pub fn getPositionLat(msg: GpsMetadataMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: GpsMetadataMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    pub fn getEnhancedAltitude(msg: GpsMetadataMessage) ?f32 {
+        return msg.enhanced_altitude;
+    }
+
+    pub fn getEnhancedSpeed(msg: GpsMetadataMessage) ?f32 {
+        return msg.enhanced_speed;
+    }
+
+    pub fn getHeading(msg: GpsMetadataMessage) ?f32 {
+        return msg.heading;
+    }
+
+    /// Used to correlate UTC to system time if the timestamp of the message is in system time. This UTC time is derived from the GPS data.
+    pub fn getUtcTimestamp(msg: GpsMetadataMessage) ?u32 {
+        return msg.utc_timestamp;
+    }
+
+    /// velocity[0] is lon velocity. Velocity[1] is lat velocity. Velocity[2] is altitude velocity.
+    pub fn getVelocity(msg: GpsMetadataMessage) ?[]f32 {
+        return msg.velocity;
+    }
 
     pub fn fromRawFields(msg: *GpsMetadataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -10537,6 +13748,28 @@ pub const CameraEventMessage = struct {
     camera_file_uuid: ?[:0]u8 = null,
     camera_orientation: ?CameraOrientationType = null,
 
+    /// Whole second part of the timestamp.
+    pub fn getTimestamp(msg: CameraEventMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: CameraEventMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    pub fn getCameraEventType(msg: CameraEventMessage) ?CameraEventType {
+        return msg.camera_event_type;
+    }
+
+    pub fn getCameraFileUuid(msg: CameraEventMessage) ?[:0]u8 {
+        return msg.camera_file_uuid;
+    }
+
+    pub fn getCameraOrientation(msg: CameraEventMessage) ?CameraOrientationType {
+        return msg.camera_orientation;
+    }
+
     pub fn fromRawFields(msg: *CameraEventMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10592,6 +13825,51 @@ pub const GyroscopeDataMessage = struct {
     calibrated_gyro_y: ?[]f32 = null,
     /// Calibrated gyro reading
     calibrated_gyro_z: ?[]f32 = null,
+
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: GyroscopeDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: GyroscopeDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Each time in the array describes the time at which the gyro sample with the corrosponding index was taken. Limited to 30 samples in each message. The samples may span across seconds. Array size must match the number of samples in gyro_x and gyro_y and gyro_z
+    pub fn getSampleTimeOffset(msg: GyroscopeDataMessage) ?[]u16 {
+        return msg.sample_time_offset;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getGyroX(msg: GyroscopeDataMessage) ?[]u16 {
+        return msg.gyro_x;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getGyroY(msg: GyroscopeDataMessage) ?[]u16 {
+        return msg.gyro_y;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getGyroZ(msg: GyroscopeDataMessage) ?[]u16 {
+        return msg.gyro_z;
+    }
+
+    /// Calibrated gyro reading
+    pub fn getCalibratedGyroX(msg: GyroscopeDataMessage) ?[]f32 {
+        return msg.calibrated_gyro_x;
+    }
+
+    /// Calibrated gyro reading
+    pub fn getCalibratedGyroY(msg: GyroscopeDataMessage) ?[]f32 {
+        return msg.calibrated_gyro_y;
+    }
+
+    /// Calibrated gyro reading
+    pub fn getCalibratedGyroZ(msg: GyroscopeDataMessage) ?[]f32 {
+        return msg.calibrated_gyro_z;
+    }
 
     pub fn fromRawFields(msg: *GyroscopeDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -10709,6 +13987,66 @@ pub const AccelerometerDataMessage = struct {
     compressed_calibrated_accel_y: ?[]i16 = null,
     /// Calibrated accel reading
     compressed_calibrated_accel_z: ?[]i16 = null,
+
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: AccelerometerDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: AccelerometerDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Each time in the array describes the time at which the accelerometer sample with the corrosponding index was taken. Limited to 30 samples in each message. The samples may span across seconds. Array size must match the number of samples in accel_x and accel_y and accel_z
+    pub fn getSampleTimeOffset(msg: AccelerometerDataMessage) ?[]u16 {
+        return msg.sample_time_offset;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getAccelX(msg: AccelerometerDataMessage) ?[]u16 {
+        return msg.accel_x;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getAccelY(msg: AccelerometerDataMessage) ?[]u16 {
+        return msg.accel_y;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getAccelZ(msg: AccelerometerDataMessage) ?[]u16 {
+        return msg.accel_z;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCalibratedAccelX(msg: AccelerometerDataMessage) ?[]f32 {
+        return msg.calibrated_accel_x;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCalibratedAccelY(msg: AccelerometerDataMessage) ?[]f32 {
+        return msg.calibrated_accel_y;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCalibratedAccelZ(msg: AccelerometerDataMessage) ?[]f32 {
+        return msg.calibrated_accel_z;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCompressedCalibratedAccelX(msg: AccelerometerDataMessage) ?[]i16 {
+        return msg.compressed_calibrated_accel_x;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCompressedCalibratedAccelY(msg: AccelerometerDataMessage) ?[]i16 {
+        return msg.compressed_calibrated_accel_y;
+    }
+
+    /// Calibrated accel reading
+    pub fn getCompressedCalibratedAccelZ(msg: AccelerometerDataMessage) ?[]i16 {
+        return msg.compressed_calibrated_accel_z;
+    }
 
     pub fn fromRawFields(msg: *AccelerometerDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -10851,6 +14189,51 @@ pub const MagnetometerDataMessage = struct {
     /// Calibrated Magnetometer reading
     calibrated_mag_z: ?[]f32 = null,
 
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: MagnetometerDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: MagnetometerDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Each time in the array describes the time at which the compass sample with the corrosponding index was taken. Limited to 30 samples in each message. The samples may span across seconds. Array size must match the number of samples in cmps_x and cmps_y and cmps_z
+    pub fn getSampleTimeOffset(msg: MagnetometerDataMessage) ?[]u16 {
+        return msg.sample_time_offset;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getMagX(msg: MagnetometerDataMessage) ?[]u16 {
+        return msg.mag_x;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getMagY(msg: MagnetometerDataMessage) ?[]u16 {
+        return msg.mag_y;
+    }
+
+    /// These are the raw ADC reading. Maximum number of samples is 30 in each message. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getMagZ(msg: MagnetometerDataMessage) ?[]u16 {
+        return msg.mag_z;
+    }
+
+    /// Calibrated Magnetometer reading
+    pub fn getCalibratedMagX(msg: MagnetometerDataMessage) ?[]f32 {
+        return msg.calibrated_mag_x;
+    }
+
+    /// Calibrated Magnetometer reading
+    pub fn getCalibratedMagY(msg: MagnetometerDataMessage) ?[]f32 {
+        return msg.calibrated_mag_y;
+    }
+
+    /// Calibrated Magnetometer reading
+    pub fn getCalibratedMagZ(msg: MagnetometerDataMessage) ?[]f32 {
+        return msg.calibrated_mag_z;
+    }
+
     pub fn fromRawFields(msg: *MagnetometerDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -10952,6 +14335,26 @@ pub const BarometerDataMessage = struct {
     /// These are the raw ADC reading. The samples may span across seconds. A conversion will need to be done on this data once read.
     baro_pres: ?[]u32 = null,
 
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: BarometerDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: BarometerDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Each time in the array describes the time at which the barometer sample with the corrosponding index was taken. The samples may span across seconds. Array size must match the number of samples in baro_cal
+    pub fn getSampleTimeOffset(msg: BarometerDataMessage) ?[]u16 {
+        return msg.sample_time_offset;
+    }
+
+    /// These are the raw ADC reading. The samples may span across seconds. A conversion will need to be done on this data once read.
+    pub fn getBaroPres(msg: BarometerDataMessage) ?[]u32 {
+        return msg.baro_pres;
+    }
+
     pub fn fromRawFields(msg: *BarometerDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11006,6 +14409,36 @@ pub const ThreeDSensorCalibrationMessage = struct {
     offset_cal: ?[]i32 = null,
     /// 3 x 3 rotation matrix (row major)
     orientation_matrix: ?[]f32 = null,
+
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: ThreeDSensorCalibrationMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Indicates which sensor the calibration is for
+    pub fn getSensorType(msg: ThreeDSensorCalibrationMessage) ?SensorType {
+        return msg.sensor_type;
+    }
+
+    /// Calibration factor divisor
+    pub fn getCalibrationDivisor(msg: ThreeDSensorCalibrationMessage) ?u32 {
+        return msg.calibration_divisor;
+    }
+
+    /// Level shift value used to shift the ADC value back into range
+    pub fn getLevelShift(msg: ThreeDSensorCalibrationMessage) ?u32 {
+        return msg.level_shift;
+    }
+
+    /// Internal calibration factors, one for each: xy, yx, zx
+    pub fn getOffsetCal(msg: ThreeDSensorCalibrationMessage) ?[]i32 {
+        return msg.offset_cal;
+    }
+
+    /// 3 x 3 rotation matrix (row major)
+    pub fn getOrientationMatrix(msg: ThreeDSensorCalibrationMessage) ?[]f32 {
+        return msg.orientation_matrix;
+    }
 
     pub fn fromRawFields(msg: *ThreeDSensorCalibrationMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -11069,6 +14502,31 @@ pub const OneDSensorCalibrationMessage = struct {
     /// Internal Calibration factor
     offset_cal: ?i32 = null,
 
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: OneDSensorCalibrationMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Indicates which sensor the calibration is for
+    pub fn getSensorType(msg: OneDSensorCalibrationMessage) ?SensorType {
+        return msg.sensor_type;
+    }
+
+    /// Calibration factor divisor
+    pub fn getCalibrationDivisor(msg: OneDSensorCalibrationMessage) ?u32 {
+        return msg.calibration_divisor;
+    }
+
+    /// Level shift value used to shift the ADC value back into range
+    pub fn getLevelShift(msg: OneDSensorCalibrationMessage) ?u32 {
+        return msg.level_shift;
+    }
+
+    /// Internal Calibration factor
+    pub fn getOffsetCal(msg: OneDSensorCalibrationMessage) ?i32 {
+        return msg.offset_cal;
+    }
+
     pub fn fromRawFields(msg: *OneDSensorCalibrationMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11106,6 +14564,21 @@ pub const VideoFrameMessage = struct {
     timestamp_ms: ?u16 = null,
     /// Number of the frame that the timestamp and timestamp_ms correlate to
     frame_number: ?u32 = null,
+
+    /// Whole second part of the timestamp
+    pub fn getTimestamp(msg: VideoFrameMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond part of the timestamp.
+    pub fn getTimestampMs(msg: VideoFrameMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Number of the frame that the timestamp and timestamp_ms correlate to
+    pub fn getFrameNumber(msg: VideoFrameMessage) ?u32 {
+        return msg.frame_number;
+    }
 
     pub fn fromRawFields(msg: *VideoFrameMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -11148,6 +14621,51 @@ pub const ObdiiDataMessage = struct {
     start_timestamp: ?u32 = null,
     /// Fractional part of start_timestamp
     start_timestamp_ms: ?u16 = null,
+
+    /// Timestamp message was output
+    pub fn getTimestamp(msg: ObdiiDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Fractional part of timestamp, added to timestamp
+    pub fn getTimestampMs(msg: ObdiiDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Offset of PID reading [i] from start_timestamp+start_timestamp_ms. Readings may span accross seconds.
+    pub fn getTimeOffset(msg: ObdiiDataMessage) ?[]u16 {
+        return msg.time_offset;
+    }
+
+    /// Parameter ID
+    pub fn getPid(msg: ObdiiDataMessage) ?u8 {
+        return msg.pid;
+    }
+
+    /// Raw parameter data
+    pub fn getRawData(msg: ObdiiDataMessage) ?[]u8 {
+        return msg.raw_data;
+    }
+
+    /// Optional, data size of PID[i]. If not specified refer to SAE J1979.
+    pub fn getPidDataSize(msg: ObdiiDataMessage) ?[]u8 {
+        return msg.pid_data_size;
+    }
+
+    /// System time associated with sample expressed in ms, can be used instead of time_offset. There will be a system_time value for each raw_data element. For multibyte pids the system_time is repeated.
+    pub fn getSystemTime(msg: ObdiiDataMessage) ?[]u32 {
+        return msg.system_time;
+    }
+
+    /// Timestamp of first sample recorded in the message. Used with time_offset to generate time of each sample
+    pub fn getStartTimestamp(msg: ObdiiDataMessage) ?u32 {
+        return msg.start_timestamp;
+    }
+
+    /// Fractional part of start_timestamp
+    pub fn getStartTimestampMs(msg: ObdiiDataMessage) ?u16 {
+        return msg.start_timestamp_ms;
+    }
 
     pub fn fromRawFields(msg: *ObdiiDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -11230,6 +14748,21 @@ pub const NmeaSentenceMessage = struct {
     /// NMEA sentence
     sentence: ?[:0]u8 = null,
 
+    /// Timestamp message was output
+    pub fn getTimestamp(msg: NmeaSentenceMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Fractional part of timestamp, added to timestamp
+    pub fn getTimestampMs(msg: NmeaSentenceMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// NMEA sentence
+    pub fn getSentence(msg: NmeaSentenceMessage) ?[:0]u8 {
+        return msg.sentence;
+    }
+
     pub fn fromRawFields(msg: *NmeaSentenceMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11281,6 +14814,64 @@ pub const AviationAttitudeMessage = struct {
     /// Track Angle/Heading Range 0 - 2pi
     track: ?[]f32 = null,
     validity: ?[]AttitudeValidity = null,
+
+    /// Timestamp message was output
+    pub fn getTimestamp(msg: AviationAttitudeMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Fractional part of timestamp, added to timestamp
+    pub fn getTimestampMs(msg: AviationAttitudeMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// System time associated with sample expressed in ms.
+    pub fn getSystemTime(msg: AviationAttitudeMessage) ?[]u32 {
+        return msg.system_time;
+    }
+
+    /// Range -PI/2 to +PI/2
+    pub fn getPitch(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.pitch;
+    }
+
+    /// Range -PI to +PI
+    pub fn getRoll(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.roll;
+    }
+
+    /// Range -78.4 to +78.4 (-8 Gs to 8 Gs)
+    pub fn getAccelLateral(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.accel_lateral;
+    }
+
+    /// Range -78.4 to +78.4 (-8 Gs to 8 Gs)
+    pub fn getAccelNormal(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.accel_normal;
+    }
+
+    /// Range -8.727 to +8.727 (-500 degs/sec to +500 degs/sec)
+    pub fn getTurnRate(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.turn_rate;
+    }
+
+    pub fn getStage(msg: AviationAttitudeMessage) ?[]AttitudeStage {
+        return msg.stage;
+    }
+
+    /// The percent complete of the current attitude stage. Set to 0 for attitude stages 0, 1 and 2 and to 100 for attitude stage 3 by AHRS modules that do not support it. Range - 100
+    pub fn getAttitudeStageComplete(msg: AviationAttitudeMessage) ?[]u8 {
+        return msg.attitude_stage_complete;
+    }
+
+    /// Track Angle/Heading Range 0 - 2pi
+    pub fn getTrack(msg: AviationAttitudeMessage) ?[]f32 {
+        return msg.track;
+    }
+
+    pub fn getValidity(msg: AviationAttitudeMessage) ?[]AttitudeValidity {
+        return msg.validity;
+    }
 
     pub fn fromRawFields(msg: *AviationAttitudeMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -11415,6 +15006,19 @@ pub const VideoMessage = struct {
     /// Playback time of video
     duration: ?u32 = null,
 
+    pub fn getUrl(msg: VideoMessage) ?[:0]u8 {
+        return msg.url;
+    }
+
+    pub fn getHostingProvider(msg: VideoMessage) ?[:0]u8 {
+        return msg.hosting_provider;
+    }
+
+    /// Playback time of video
+    pub fn getDuration(msg: VideoMessage) ?u32 {
+        return msg.duration;
+    }
+
     pub fn fromRawFields(msg: *VideoMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11453,6 +15057,20 @@ pub const VideoTitleMessage = struct {
     message_count: ?u16 = null,
     text: ?[:0]u8 = null,
 
+    /// Long titles will be split into multiple parts
+    pub fn getMessageIndex(msg: VideoTitleMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Total number of title parts
+    pub fn getMessageCount(msg: VideoTitleMessage) ?u16 {
+        return msg.message_count;
+    }
+
+    pub fn getText(msg: VideoTitleMessage) ?[:0]u8 {
+        return msg.text;
+    }
+
     pub fn fromRawFields(msg: *VideoTitleMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11487,6 +15105,20 @@ pub const VideoDescriptionMessage = struct {
     /// Total number of description parts
     message_count: ?u16 = null,
     text: ?[:0]u8 = null,
+
+    /// Long descriptions will be split into multiple parts
+    pub fn getMessageIndex(msg: VideoDescriptionMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Total number of description parts
+    pub fn getMessageCount(msg: VideoDescriptionMessage) ?u16 {
+        return msg.message_count;
+    }
+
+    pub fn getText(msg: VideoDescriptionMessage) ?[:0]u8 {
+        return msg.text;
+    }
 
     pub fn fromRawFields(msg: *VideoDescriptionMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -11526,6 +15158,36 @@ pub const VideoClipMessage = struct {
     clip_start: ?u32 = null,
     /// End of clip in video time
     clip_end: ?u32 = null,
+
+    pub fn getClipNumber(msg: VideoClipMessage) ?u16 {
+        return msg.clip_number;
+    }
+
+    pub fn getStartTimestamp(msg: VideoClipMessage) ?u32 {
+        return msg.start_timestamp;
+    }
+
+    pub fn getStartTimestampMs(msg: VideoClipMessage) ?u16 {
+        return msg.start_timestamp_ms;
+    }
+
+    pub fn getEndTimestamp(msg: VideoClipMessage) ?u32 {
+        return msg.end_timestamp;
+    }
+
+    pub fn getEndTimestampMs(msg: VideoClipMessage) ?u16 {
+        return msg.end_timestamp_ms;
+    }
+
+    /// Start of clip in video time
+    pub fn getClipStart(msg: VideoClipMessage) ?u32 {
+        return msg.clip_start;
+    }
+
+    /// End of clip in video time
+    pub fn getClipEnd(msg: VideoClipMessage) ?u32 {
+        return msg.clip_end;
+    }
 
     pub fn fromRawFields(msg: *VideoClipMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -11582,6 +15244,55 @@ pub const SetMessage = struct {
     weight_display_unit: ?FitBaseUnit = null,
     message_index: ?MessageIndex = null,
     wkt_step_index: ?MessageIndex = null,
+
+    /// Timestamp of the set
+    pub fn getTimestamp(msg: SetMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getDuration(msg: SetMessage) ?f32 {
+        return msg.duration;
+    }
+
+    /// # of repitions of the movement
+    pub fn getRepetitions(msg: SetMessage) ?u16 {
+        return msg.repetitions;
+    }
+
+    /// Amount of weight applied for the set
+    pub fn getWeight(msg: SetMessage) ?f32 {
+        return msg.weight;
+    }
+
+    pub fn getSetType(msg: SetMessage) ?SetType {
+        return msg.set_type;
+    }
+
+    /// Start time of the set
+    pub fn getStartTime(msg: SetMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getCategory(msg: SetMessage) ?[]ExerciseCategory {
+        return msg.category;
+    }
+
+    /// Based on the associated category, see [category]_exercise_names
+    pub fn getCategorySubtype(msg: SetMessage) ?[]u16 {
+        return msg.category_subtype;
+    }
+
+    pub fn getWeightDisplayUnit(msg: SetMessage) ?FitBaseUnit {
+        return msg.weight_display_unit;
+    }
+
+    pub fn getMessageIndex(msg: SetMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getWktStepIndex(msg: SetMessage) ?MessageIndex {
+        return msg.wkt_step_index;
+    }
 
     pub fn fromRawFields(msg: *SetMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -11667,6 +15378,47 @@ pub const JumpMessage = struct {
     speed: ?f32 = null,
     enhanced_speed: ?f32 = null,
 
+    pub fn getTimestamp(msg: JumpMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getDistance(msg: JumpMessage) ?f32 {
+        return msg.distance;
+    }
+
+    pub fn getHeight(msg: JumpMessage) ?f32 {
+        return msg.height;
+    }
+
+    pub fn getRotations(msg: JumpMessage) ?u8 {
+        return msg.rotations;
+    }
+
+    pub fn getHangTime(msg: JumpMessage) ?f32 {
+        return msg.hang_time;
+    }
+
+    /// A score for a jump calculated based on hang time, rotations, and distance.
+    pub fn getScore(msg: JumpMessage) ?f32 {
+        return msg.score;
+    }
+
+    pub fn getPositionLat(msg: JumpMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: JumpMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    pub fn getSpeed(msg: JumpMessage) ?f32 {
+        return msg.speed;
+    }
+
+    pub fn getEnhancedSpeed(msg: JumpMessage) ?f32 {
+        return msg.enhanced_speed;
+    }
+
     pub fn fromRawFields(msg: *JumpMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11741,6 +15493,87 @@ pub const SplitMessage = struct {
     /// Active time of split rounds
     active_time: ?f32 = null,
     total_moving_time: ?f32 = null,
+
+    pub fn getMessageIndex(msg: SplitMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getSplitType(msg: SplitMessage) ?SplitType {
+        return msg.split_type;
+    }
+
+    pub fn getTotalElapsedTime(msg: SplitMessage) ?f32 {
+        return msg.total_elapsed_time;
+    }
+
+    pub fn getTotalTimerTime(msg: SplitMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalDistance(msg: SplitMessage) ?f32 {
+        return msg.total_distance;
+    }
+
+    pub fn getAvgSpeed(msg: SplitMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getStartTime(msg: SplitMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getTotalAscent(msg: SplitMessage) ?u16 {
+        return msg.total_ascent;
+    }
+
+    pub fn getTotalDescent(msg: SplitMessage) ?u16 {
+        return msg.total_descent;
+    }
+
+    pub fn getStartPositionLat(msg: SplitMessage) ?i32 {
+        return msg.start_position_lat;
+    }
+
+    pub fn getStartPositionLong(msg: SplitMessage) ?i32 {
+        return msg.start_position_long;
+    }
+
+    pub fn getEndPositionLat(msg: SplitMessage) ?i32 {
+        return msg.end_position_lat;
+    }
+
+    pub fn getEndPositionLong(msg: SplitMessage) ?i32 {
+        return msg.end_position_long;
+    }
+
+    pub fn getMaxSpeed(msg: SplitMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    pub fn getAvgVertSpeed(msg: SplitMessage) ?f32 {
+        return msg.avg_vert_speed;
+    }
+
+    pub fn getEndTime(msg: SplitMessage) ?u32 {
+        return msg.end_time;
+    }
+
+    pub fn getTotalCalories(msg: SplitMessage) ?u32 {
+        return msg.total_calories;
+    }
+
+    pub fn getStartElevation(msg: SplitMessage) ?f32 {
+        return msg.start_elevation;
+    }
+
+    /// Active time of split rounds
+    pub fn getActiveTime(msg: SplitMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getTotalMovingTime(msg: SplitMessage) ?f32 {
+        return msg.total_moving_time;
+    }
 
     pub fn fromRawFields(msg: *SplitMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -11859,6 +15692,67 @@ pub const SplitSummaryMessage = struct {
     active_time: ?f32 = null,
     total_moving_time: ?f32 = null,
 
+    pub fn getMessageIndex(msg: SplitSummaryMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getSplitType(msg: SplitSummaryMessage) ?SplitType {
+        return msg.split_type;
+    }
+
+    pub fn getNumSplits(msg: SplitSummaryMessage) ?u16 {
+        return msg.num_splits;
+    }
+
+    pub fn getTotalTimerTime(msg: SplitSummaryMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalDistance(msg: SplitSummaryMessage) ?f32 {
+        return msg.total_distance;
+    }
+
+    pub fn getAvgSpeed(msg: SplitSummaryMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getMaxSpeed(msg: SplitSummaryMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    pub fn getTotalAscent(msg: SplitSummaryMessage) ?u16 {
+        return msg.total_ascent;
+    }
+
+    pub fn getTotalDescent(msg: SplitSummaryMessage) ?u16 {
+        return msg.total_descent;
+    }
+
+    pub fn getAvgHeartRate(msg: SplitSummaryMessage) ?u8 {
+        return msg.avg_heart_rate;
+    }
+
+    pub fn getMaxHeartRate(msg: SplitSummaryMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    pub fn getAvgVertSpeed(msg: SplitSummaryMessage) ?f32 {
+        return msg.avg_vert_speed;
+    }
+
+    pub fn getTotalCalories(msg: SplitSummaryMessage) ?u32 {
+        return msg.total_calories;
+    }
+
+    /// total active time in all split rounds
+    pub fn getActiveTime(msg: SplitSummaryMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getTotalMovingTime(msg: SplitSummaryMessage) ?f32 {
+        return msg.total_moving_time;
+    }
+
     pub fn fromRawFields(msg: *SplitSummaryMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11945,6 +15839,34 @@ pub const ClimbProMessage = struct {
     climb_category: ?u8 = null,
     current_dist: ?f32 = null,
 
+    pub fn getTimestamp(msg: ClimbProMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getPositionLat(msg: ClimbProMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: ClimbProMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    pub fn getClimbProEvent(msg: ClimbProMessage) ?ClimbProEvent {
+        return msg.climb_pro_event;
+    }
+
+    pub fn getClimbNumber(msg: ClimbProMessage) ?u16 {
+        return msg.climb_number;
+    }
+
+    pub fn getClimbCategory(msg: ClimbProMessage) ?u8 {
+        return msg.climb_category;
+    }
+
+    pub fn getCurrentDist(msg: ClimbProMessage) ?f32 {
+        return msg.current_dist;
+    }
+
     pub fn fromRawFields(msg: *ClimbProMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -11999,6 +15921,62 @@ pub const FieldDescriptionMessage = struct {
     fit_base_unit_id: ?FitBaseUnit = null,
     native_mesg_num: ?MesgNum = null,
     native_field_num: ?u8 = null,
+
+    pub fn getDeveloperDataIndex(msg: FieldDescriptionMessage) ?u8 {
+        return msg.developer_data_index;
+    }
+
+    pub fn getFieldDefinitionNumber(msg: FieldDescriptionMessage) ?u8 {
+        return msg.field_definition_number;
+    }
+
+    pub fn getFitBaseTypeId(msg: FieldDescriptionMessage) ?FitBaseType {
+        return msg.fit_base_type_id;
+    }
+
+    pub fn getFieldName(msg: FieldDescriptionMessage) ?[:0]u8 {
+        return msg.field_name;
+    }
+
+    pub fn getArray(msg: FieldDescriptionMessage) ?u8 {
+        return msg.array;
+    }
+
+    pub fn getComponents(msg: FieldDescriptionMessage) ?[:0]u8 {
+        return msg.components;
+    }
+
+    pub fn getScale(msg: FieldDescriptionMessage) ?u8 {
+        return msg.scale;
+    }
+
+    pub fn getOffset(msg: FieldDescriptionMessage) ?i8 {
+        return msg.offset;
+    }
+
+    pub fn getUnits(msg: FieldDescriptionMessage) ?[:0]u8 {
+        return msg.units;
+    }
+
+    pub fn getBits(msg: FieldDescriptionMessage) ?[:0]u8 {
+        return msg.bits;
+    }
+
+    pub fn getAccumulate(msg: FieldDescriptionMessage) ?[:0]u8 {
+        return msg.accumulate;
+    }
+
+    pub fn getFitBaseUnitId(msg: FieldDescriptionMessage) ?FitBaseUnit {
+        return msg.fit_base_unit_id;
+    }
+
+    pub fn getNativeMesgNum(msg: FieldDescriptionMessage) ?MesgNum {
+        return msg.native_mesg_num;
+    }
+
+    pub fn getNativeFieldNum(msg: FieldDescriptionMessage) ?u8 {
+        return msg.native_field_num;
+    }
 
     pub fn fromRawFields(msg: *FieldDescriptionMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -12098,6 +16076,26 @@ pub const DeveloperDataIdMessage = struct {
     developer_data_index: ?u8 = null,
     application_version: ?u32 = null,
 
+    pub fn getDeveloperId(msg: DeveloperDataIdMessage) ?[]u8 {
+        return msg.developer_id;
+    }
+
+    pub fn getApplicationId(msg: DeveloperDataIdMessage) ?[]u8 {
+        return msg.application_id;
+    }
+
+    pub fn getManufacturerId(msg: DeveloperDataIdMessage) ?Manufacturer {
+        return msg.manufacturer_id;
+    }
+
+    pub fn getDeveloperDataIndex(msg: DeveloperDataIdMessage) ?u8 {
+        return msg.developer_data_index;
+    }
+
+    pub fn getApplicationVersion(msg: DeveloperDataIdMessage) ?u32 {
+        return msg.application_version;
+    }
+
     pub fn fromRawFields(msg: *DeveloperDataIdMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -12149,6 +16147,22 @@ pub const CourseMessage = struct {
     capabilities: ?CourseCapabilities = null,
     sub_sport: ?SubSport = null,
 
+    pub fn getSport(msg: CourseMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getName(msg: CourseMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getCapabilities(msg: CourseMessage) ?CourseCapabilities {
+        return msg.capabilities;
+    }
+
+    pub fn getSubSport(msg: CourseMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
     pub fn fromRawFields(msg: *CourseMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -12190,6 +16204,38 @@ pub const CoursePointMessage = struct {
     type: ?CoursePoint = null,
     name: ?[:0]u8 = null,
     favorite: ?bool = null,
+
+    pub fn getMessageIndex(msg: CoursePointMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: CoursePointMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getPositionLat(msg: CoursePointMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: CoursePointMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    pub fn getDistance(msg: CoursePointMessage) ?f32 {
+        return msg.distance;
+    }
+
+    pub fn getType(msg: CoursePointMessage) ?CoursePoint {
+        return msg.type;
+    }
+
+    pub fn getName(msg: CoursePointMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getFavorite(msg: CoursePointMessage) ?bool {
+        return msg.favorite;
+    }
 
     pub fn fromRawFields(msg: *CoursePointMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -12256,6 +16302,51 @@ pub const SegmentIdMessage = struct {
     delete_status: ?SegmentDeleteStatus = null,
     /// Indicates how the segment was selected to be sent to the device
     selection_type: ?SegmentSelectionType = null,
+
+    /// Friendly name assigned to segment
+    pub fn getName(msg: SegmentIdMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    /// UUID of the segment
+    pub fn getUuid(msg: SegmentIdMessage) ?[:0]u8 {
+        return msg.uuid;
+    }
+
+    /// Sport associated with the segment
+    pub fn getSport(msg: SegmentIdMessage) ?Sport {
+        return msg.sport;
+    }
+
+    /// Segment enabled for evaluation
+    pub fn getEnabled(msg: SegmentIdMessage) ?bool {
+        return msg.enabled;
+    }
+
+    /// Primary key of the user that created the segment
+    pub fn getUserProfilePrimaryKey(msg: SegmentIdMessage) ?u32 {
+        return msg.user_profile_primary_key;
+    }
+
+    /// ID of the device that created the segment
+    pub fn getDeviceId(msg: SegmentIdMessage) ?u32 {
+        return msg.device_id;
+    }
+
+    /// Index for the Leader Board entry selected as the default race participant
+    pub fn getDefaultRaceLeader(msg: SegmentIdMessage) ?u8 {
+        return msg.default_race_leader;
+    }
+
+    /// Indicates if any segments should be deleted
+    pub fn getDeleteStatus(msg: SegmentIdMessage) ?SegmentDeleteStatus {
+        return msg.delete_status;
+    }
+
+    /// Indicates how the segment was selected to be sent to the device
+    pub fn getSelectionType(msg: SegmentIdMessage) ?SegmentSelectionType {
+        return msg.selection_type;
+    }
 
     pub fn fromRawFields(msg: *SegmentIdMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -12324,6 +16415,40 @@ pub const SegmentLeaderboardEntryMessage = struct {
     /// String version of the activity_id. 21 characters long, express in decimal
     activity_id_string: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: SegmentLeaderboardEntryMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// Friendly name assigned to leader
+    pub fn getName(msg: SegmentLeaderboardEntryMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    /// Leader classification
+    pub fn getType(msg: SegmentLeaderboardEntryMessage) ?SegmentLeaderboardType {
+        return msg.type;
+    }
+
+    /// Primary user ID of this leader
+    pub fn getGroupPrimaryKey(msg: SegmentLeaderboardEntryMessage) ?u32 {
+        return msg.group_primary_key;
+    }
+
+    /// ID of the activity associated with this leader time
+    pub fn getActivityId(msg: SegmentLeaderboardEntryMessage) ?u32 {
+        return msg.activity_id;
+    }
+
+    /// Segment Time (includes pauses)
+    pub fn getSegmentTime(msg: SegmentLeaderboardEntryMessage) ?f32 {
+        return msg.segment_time;
+    }
+
+    /// String version of the activity_id. 21 characters long, express in decimal
+    pub fn getActivityIdString(msg: SegmentLeaderboardEntryMessage) ?[:0]u8 {
+        return msg.activity_id_string;
+    }
+
     pub fn fromRawFields(msg: *SegmentLeaderboardEntryMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -12385,6 +16510,38 @@ pub const SegmentPointMessage = struct {
     leader_time: ?[]f32 = null,
     /// Accumulated altitude along the segment at the described point
     enhanced_altitude: ?f32 = null,
+
+    pub fn getMessageIndex(msg: SegmentPointMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getPositionLat(msg: SegmentPointMessage) ?i32 {
+        return msg.position_lat;
+    }
+
+    pub fn getPositionLong(msg: SegmentPointMessage) ?i32 {
+        return msg.position_long;
+    }
+
+    /// Accumulated distance along the segment at the described point
+    pub fn getDistance(msg: SegmentPointMessage) ?f32 {
+        return msg.distance;
+    }
+
+    /// Accumulated altitude along the segment at the described point
+    pub fn getAltitude(msg: SegmentPointMessage) ?f32 {
+        return msg.altitude;
+    }
+
+    /// Accumualted time each leader board member required to reach the described point. This value is zero for all leader board members at the starting point of the segment.
+    pub fn getLeaderTime(msg: SegmentPointMessage) ?[]f32 {
+        return msg.leader_time;
+    }
+
+    /// Accumulated altitude along the segment at the described point
+    pub fn getEnhancedAltitude(msg: SegmentPointMessage) ?f32 {
+        return msg.enhanced_altitude;
+    }
 
     pub fn fromRawFields(msg: *SegmentPointMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -12563,6 +16720,413 @@ pub const SegmentLapMessage = struct {
     enhanced_avg_altitude: ?f32 = null,
     enhanced_max_altitude: ?f32 = null,
     enhanced_min_altitude: ?f32 = null,
+
+    pub fn getMessageIndex(msg: SegmentLapMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: SegmentLapMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getEvent(msg: SegmentLapMessage) ?Event {
+        return msg.event;
+    }
+
+    pub fn getEventType(msg: SegmentLapMessage) ?EventType {
+        return msg.event_type;
+    }
+
+    pub fn getStartTime(msg: SegmentLapMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getStartPositionLat(msg: SegmentLapMessage) ?i32 {
+        return msg.start_position_lat;
+    }
+
+    pub fn getStartPositionLong(msg: SegmentLapMessage) ?i32 {
+        return msg.start_position_long;
+    }
+
+    pub fn getEndPositionLat(msg: SegmentLapMessage) ?i32 {
+        return msg.end_position_lat;
+    }
+
+    pub fn getEndPositionLong(msg: SegmentLapMessage) ?i32 {
+        return msg.end_position_long;
+    }
+
+    /// Time (includes pauses)
+    pub fn getTotalElapsedTime(msg: SegmentLapMessage) ?f32 {
+        return msg.total_elapsed_time;
+    }
+
+    /// Timer Time (excludes pauses)
+    pub fn getTotalTimerTime(msg: SegmentLapMessage) ?f32 {
+        return msg.total_timer_time;
+    }
+
+    pub fn getTotalDistance(msg: SegmentLapMessage) ?f32 {
+        return msg.total_distance;
+    }
+
+    pub fn getTotalCalories(msg: SegmentLapMessage) ?u16 {
+        return msg.total_calories;
+    }
+
+    /// If New Leaf
+    pub fn getTotalFatCalories(msg: SegmentLapMessage) ?u16 {
+        return msg.total_fat_calories;
+    }
+
+    pub fn getAvgSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getMaxSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    pub fn getAvgHeartRate(msg: SegmentLapMessage) ?u8 {
+        return msg.avg_heart_rate;
+    }
+
+    pub fn getMaxHeartRate(msg: SegmentLapMessage) ?u8 {
+        return msg.max_heart_rate;
+    }
+
+    /// total_cycles / total_timer_time if non_zero_avg_cadence otherwise total_cycles / total_elapsed_time
+    pub fn getAvgCadence(msg: SegmentLapMessage) ?u8 {
+        return msg.avg_cadence;
+    }
+
+    pub fn getMaxCadence(msg: SegmentLapMessage) ?u8 {
+        return msg.max_cadence;
+    }
+
+    /// total_power / total_timer_time if non_zero_avg_power otherwise total_power / total_elapsed_time
+    pub fn getAvgPower(msg: SegmentLapMessage) ?u16 {
+        return msg.avg_power;
+    }
+
+    pub fn getMaxPower(msg: SegmentLapMessage) ?u16 {
+        return msg.max_power;
+    }
+
+    pub fn getTotalAscent(msg: SegmentLapMessage) ?u16 {
+        return msg.total_ascent;
+    }
+
+    pub fn getTotalDescent(msg: SegmentLapMessage) ?u16 {
+        return msg.total_descent;
+    }
+
+    pub fn getSport(msg: SegmentLapMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getEventGroup(msg: SegmentLapMessage) ?u8 {
+        return msg.event_group;
+    }
+
+    /// North east corner latitude.
+    pub fn getNecLat(msg: SegmentLapMessage) ?i32 {
+        return msg.nec_lat;
+    }
+
+    /// North east corner longitude.
+    pub fn getNecLong(msg: SegmentLapMessage) ?i32 {
+        return msg.nec_long;
+    }
+
+    /// South west corner latitude.
+    pub fn getSwcLat(msg: SegmentLapMessage) ?i32 {
+        return msg.swc_lat;
+    }
+
+    /// South west corner latitude.
+    pub fn getSwcLong(msg: SegmentLapMessage) ?i32 {
+        return msg.swc_long;
+    }
+
+    pub fn getName(msg: SegmentLapMessage) ?[:0]u8 {
+        return msg.name;
+    }
+
+    pub fn getNormalizedPower(msg: SegmentLapMessage) ?u16 {
+        return msg.normalized_power;
+    }
+
+    pub fn getLeftRightBalance(msg: SegmentLapMessage) ?LeftRightBalance100 {
+        return msg.left_right_balance;
+    }
+
+    pub fn getSubSport(msg: SegmentLapMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getTotalWork(msg: SegmentLapMessage) ?u32 {
+        return msg.total_work;
+    }
+
+    pub fn getAvgAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_altitude;
+    }
+
+    pub fn getMaxAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.max_altitude;
+    }
+
+    pub fn getGpsAccuracy(msg: SegmentLapMessage) ?u8 {
+        return msg.gps_accuracy;
+    }
+
+    pub fn getAvgGrade(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_grade;
+    }
+
+    pub fn getAvgPosGrade(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_pos_grade;
+    }
+
+    pub fn getAvgNegGrade(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_neg_grade;
+    }
+
+    pub fn getMaxPosGrade(msg: SegmentLapMessage) ?f32 {
+        return msg.max_pos_grade;
+    }
+
+    pub fn getMaxNegGrade(msg: SegmentLapMessage) ?f32 {
+        return msg.max_neg_grade;
+    }
+
+    pub fn getAvgTemperature(msg: SegmentLapMessage) ?i8 {
+        return msg.avg_temperature;
+    }
+
+    pub fn getMaxTemperature(msg: SegmentLapMessage) ?i8 {
+        return msg.max_temperature;
+    }
+
+    pub fn getTotalMovingTime(msg: SegmentLapMessage) ?f32 {
+        return msg.total_moving_time;
+    }
+
+    pub fn getAvgPosVerticalSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_pos_vertical_speed;
+    }
+
+    pub fn getAvgNegVerticalSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_neg_vertical_speed;
+    }
+
+    pub fn getMaxPosVerticalSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.max_pos_vertical_speed;
+    }
+
+    pub fn getMaxNegVerticalSpeed(msg: SegmentLapMessage) ?f32 {
+        return msg.max_neg_vertical_speed;
+    }
+
+    pub fn getTimeInHrZone(msg: SegmentLapMessage) ?[]f32 {
+        return msg.time_in_hr_zone;
+    }
+
+    pub fn getTimeInSpeedZone(msg: SegmentLapMessage) ?[]f32 {
+        return msg.time_in_speed_zone;
+    }
+
+    pub fn getTimeInCadenceZone(msg: SegmentLapMessage) ?[]f32 {
+        return msg.time_in_cadence_zone;
+    }
+
+    pub fn getTimeInPowerZone(msg: SegmentLapMessage) ?[]f32 {
+        return msg.time_in_power_zone;
+    }
+
+    pub fn getRepetitionNum(msg: SegmentLapMessage) ?u16 {
+        return msg.repetition_num;
+    }
+
+    pub fn getMinAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.min_altitude;
+    }
+
+    pub fn getMinHeartRate(msg: SegmentLapMessage) ?u8 {
+        return msg.min_heart_rate;
+    }
+
+    pub fn getActiveTime(msg: SegmentLapMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getWktStepIndex(msg: SegmentLapMessage) ?MessageIndex {
+        return msg.wkt_step_index;
+    }
+
+    pub fn getSportEvent(msg: SegmentLapMessage) ?SportEvent {
+        return msg.sport_event;
+    }
+
+    pub fn getAvgLeftTorqueEffectiveness(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_left_torque_effectiveness;
+    }
+
+    pub fn getAvgRightTorqueEffectiveness(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_right_torque_effectiveness;
+    }
+
+    pub fn getAvgLeftPedalSmoothness(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_left_pedal_smoothness;
+    }
+
+    pub fn getAvgRightPedalSmoothness(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_right_pedal_smoothness;
+    }
+
+    pub fn getAvgCombinedPedalSmoothness(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_combined_pedal_smoothness;
+    }
+
+    pub fn getStatus(msg: SegmentLapMessage) ?SegmentLapStatus {
+        return msg.status;
+    }
+
+    pub fn getUuid(msg: SegmentLapMessage) ?[:0]u8 {
+        return msg.uuid;
+    }
+
+    /// fractional part of the avg_cadence
+    pub fn getAvgFractionalCadence(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_fractional_cadence;
+    }
+
+    /// fractional part of the max_cadence
+    pub fn getMaxFractionalCadence(msg: SegmentLapMessage) ?f32 {
+        return msg.max_fractional_cadence;
+    }
+
+    /// fractional part of the total_cycles
+    pub fn getTotalFractionalCycles(msg: SegmentLapMessage) ?f32 {
+        return msg.total_fractional_cycles;
+    }
+
+    pub fn getFrontGearShiftCount(msg: SegmentLapMessage) ?u16 {
+        return msg.front_gear_shift_count;
+    }
+
+    pub fn getRearGearShiftCount(msg: SegmentLapMessage) ?u16 {
+        return msg.rear_gear_shift_count;
+    }
+
+    /// Total time spent in the standing position
+    pub fn getTimeStanding(msg: SegmentLapMessage) ?f32 {
+        return msg.time_standing;
+    }
+
+    /// Number of transitions to the standing state
+    pub fn getStandCount(msg: SegmentLapMessage) ?u16 {
+        return msg.stand_count;
+    }
+
+    /// Average left platform center offset
+    pub fn getAvgLeftPco(msg: SegmentLapMessage) ?i8 {
+        return msg.avg_left_pco;
+    }
+
+    /// Average right platform center offset
+    pub fn getAvgRightPco(msg: SegmentLapMessage) ?i8 {
+        return msg.avg_right_pco;
+    }
+
+    /// Average left power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhase(msg: SegmentLapMessage) ?[]f32 {
+        return msg.avg_left_power_phase;
+    }
+
+    /// Average left power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgLeftPowerPhasePeak(msg: SegmentLapMessage) ?[]f32 {
+        return msg.avg_left_power_phase_peak;
+    }
+
+    /// Average right power phase angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhase(msg: SegmentLapMessage) ?[]f32 {
+        return msg.avg_right_power_phase;
+    }
+
+    /// Average right power phase peak angles. Data value indexes defined by power_phase_type.
+    pub fn getAvgRightPowerPhasePeak(msg: SegmentLapMessage) ?[]f32 {
+        return msg.avg_right_power_phase_peak;
+    }
+
+    /// Average power by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgPowerPosition(msg: SegmentLapMessage) ?[]u16 {
+        return msg.avg_power_position;
+    }
+
+    /// Maximum power by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxPowerPosition(msg: SegmentLapMessage) ?[]u16 {
+        return msg.max_power_position;
+    }
+
+    /// Average cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getAvgCadencePosition(msg: SegmentLapMessage) ?[]u8 {
+        return msg.avg_cadence_position;
+    }
+
+    /// Maximum cadence by position. Data value indexes defined by rider_position_type.
+    pub fn getMaxCadencePosition(msg: SegmentLapMessage) ?[]u8 {
+        return msg.max_cadence_position;
+    }
+
+    /// Manufacturer that produced the segment
+    pub fn getManufacturer(msg: SegmentLapMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getTotalGrit(msg: SegmentLapMessage) ?f32 {
+        return msg.total_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getTotalFlow(msg: SegmentLapMessage) ?f32 {
+        return msg.total_flow;
+    }
+
+    /// The grit score estimates how challenging a route could be for a cyclist in terms of time spent going over sharp turns or large grade slopes.
+    pub fn getAvgGrit(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_grit;
+    }
+
+    /// The flow score estimates how long distance wise a cyclist deaccelerates over intervals where deacceleration is unnecessary such as smooth turns or small grade angle intervals.
+    pub fn getAvgFlow(msg: SegmentLapMessage) ?f32 {
+        return msg.avg_flow;
+    }
+
+    /// fractional part of total_ascent
+    pub fn getTotalFractionalAscent(msg: SegmentLapMessage) ?f32 {
+        return msg.total_fractional_ascent;
+    }
+
+    /// fractional part of total_descent
+    pub fn getTotalFractionalDescent(msg: SegmentLapMessage) ?f32 {
+        return msg.total_fractional_descent;
+    }
+
+    pub fn getEnhancedAvgAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.enhanced_avg_altitude;
+    }
+
+    pub fn getEnhancedMaxAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.enhanced_max_altitude;
+    }
+
+    pub fn getEnhancedMinAltitude(msg: SegmentLapMessage) ?f32 {
+        return msg.enhanced_min_altitude;
+    }
 
     pub fn fromRawFields(msg: *SegmentLapMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -13092,6 +17656,50 @@ pub const SegmentFileMessage = struct {
     /// Index for the Leader Board entry selected as the default race participant
     default_race_leader: ?u8 = null,
 
+    pub fn getMessageIndex(msg: SegmentFileMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    /// UUID of the segment file
+    pub fn getFileUuid(msg: SegmentFileMessage) ?[:0]u8 {
+        return msg.file_uuid;
+    }
+
+    /// Enabled state of the segment file
+    pub fn getEnabled(msg: SegmentFileMessage) ?bool {
+        return msg.enabled;
+    }
+
+    /// Primary key of the user that created the segment file
+    pub fn getUserProfilePrimaryKey(msg: SegmentFileMessage) ?u32 {
+        return msg.user_profile_primary_key;
+    }
+
+    /// Leader type of each leader in the segment file
+    pub fn getLeaderType(msg: SegmentFileMessage) ?[]SegmentLeaderboardType {
+        return msg.leader_type;
+    }
+
+    /// Group primary key of each leader in the segment file
+    pub fn getLeaderGroupPrimaryKey(msg: SegmentFileMessage) ?[]u32 {
+        return msg.leader_group_primary_key;
+    }
+
+    /// Activity ID of each leader in the segment file
+    pub fn getLeaderActivityId(msg: SegmentFileMessage) ?[]u32 {
+        return msg.leader_activity_id;
+    }
+
+    /// String version of the activity ID of each leader in the segment file. 21 characters long for each ID, express in decimal
+    pub fn getLeaderActivityIdString(msg: SegmentFileMessage) ?[:0]u8 {
+        return msg.leader_activity_id_string;
+    }
+
+    /// Index for the Leader Board entry selected as the default race participant
+    pub fn getDefaultRaceLeader(msg: SegmentFileMessage) ?u8 {
+        return msg.default_race_leader;
+    }
+
     pub fn fromRawFields(msg: *SegmentFileMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13177,6 +17785,44 @@ pub const WorkoutMessage = struct {
     /// Description of the workout
     wkt_description: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: WorkoutMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getSport(msg: WorkoutMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getCapabilities(msg: WorkoutMessage) ?WorkoutCapabilities {
+        return msg.capabilities;
+    }
+
+    /// number of valid steps
+    pub fn getNumValidSteps(msg: WorkoutMessage) ?u16 {
+        return msg.num_valid_steps;
+    }
+
+    pub fn getWktName(msg: WorkoutMessage) ?[:0]u8 {
+        return msg.wkt_name;
+    }
+
+    pub fn getSubSport(msg: WorkoutMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getPoolLength(msg: WorkoutMessage) ?f32 {
+        return msg.pool_length;
+    }
+
+    pub fn getPoolLengthUnit(msg: WorkoutMessage) ?DisplayMeasure {
+        return msg.pool_length_unit;
+    }
+
+    /// Description of the workout
+    pub fn getWktDescription(msg: WorkoutMessage) ?[:0]u8 {
+        return msg.wkt_description;
+    }
+
     pub fn fromRawFields(msg: *WorkoutMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13242,6 +17888,34 @@ pub const WorkoutSessionMessage = struct {
     pool_length: ?f32 = null,
     pool_length_unit: ?DisplayMeasure = null,
 
+    pub fn getMessageIndex(msg: WorkoutSessionMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getSport(msg: WorkoutSessionMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: WorkoutSessionMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getNumValidSteps(msg: WorkoutSessionMessage) ?u16 {
+        return msg.num_valid_steps;
+    }
+
+    pub fn getFirstStepIndex(msg: WorkoutSessionMessage) ?u16 {
+        return msg.first_step_index;
+    }
+
+    pub fn getPoolLength(msg: WorkoutSessionMessage) ?f32 {
+        return msg.pool_length;
+    }
+
+    pub fn getPoolLengthUnit(msg: WorkoutSessionMessage) ?DisplayMeasure {
+        return msg.pool_length_unit;
+    }
+
     pub fn fromRawFields(msg: *WorkoutSessionMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13294,6 +17968,54 @@ pub const WorkoutStepMessage = struct {
     exercise_weight: ?f32 = null,
     weight_display_unit: ?FitBaseUnit = null,
     secondary_target_type: ?WktStepTarget = null,
+
+    pub fn getMessageIndex(msg: WorkoutStepMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getWktStepName(msg: WorkoutStepMessage) ?[:0]u8 {
+        return msg.wkt_step_name;
+    }
+
+    pub fn getDurationType(msg: WorkoutStepMessage) ?WktStepDuration {
+        return msg.duration_type;
+    }
+
+    pub fn getTargetType(msg: WorkoutStepMessage) ?WktStepTarget {
+        return msg.target_type;
+    }
+
+    pub fn getIntensity(msg: WorkoutStepMessage) ?Intensity {
+        return msg.intensity;
+    }
+
+    pub fn getNotes(msg: WorkoutStepMessage) ?[:0]u8 {
+        return msg.notes;
+    }
+
+    pub fn getEquipment(msg: WorkoutStepMessage) ?WorkoutEquipment {
+        return msg.equipment;
+    }
+
+    pub fn getExerciseCategory(msg: WorkoutStepMessage) ?ExerciseCategory {
+        return msg.exercise_category;
+    }
+
+    pub fn getExerciseName(msg: WorkoutStepMessage) ?u16 {
+        return msg.exercise_name;
+    }
+
+    pub fn getExerciseWeight(msg: WorkoutStepMessage) ?f32 {
+        return msg.exercise_weight;
+    }
+
+    pub fn getWeightDisplayUnit(msg: WorkoutStepMessage) ?FitBaseUnit {
+        return msg.weight_display_unit;
+    }
+
+    pub fn getSecondaryTargetType(msg: WorkoutStepMessage) ?WktStepTarget {
+        return msg.secondary_target_type;
+    }
 
     pub fn fromRawFields(msg: *WorkoutStepMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -13369,6 +18091,22 @@ pub const ExerciseTitleMessage = struct {
     exercise_name: ?u16 = null,
     wkt_step_name: ?[:0]u8 = null,
 
+    pub fn getMessageIndex(msg: ExerciseTitleMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getExerciseCategory(msg: ExerciseTitleMessage) ?ExerciseCategory {
+        return msg.exercise_category;
+    }
+
+    pub fn getExerciseName(msg: ExerciseTitleMessage) ?u16 {
+        return msg.exercise_name;
+    }
+
+    pub fn getWktStepName(msg: ExerciseTitleMessage) ?[:0]u8 {
+        return msg.wkt_step_name;
+    }
+
     pub fn fromRawFields(msg: *ExerciseTitleMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13416,6 +18154,34 @@ pub const ScheduleMessage = struct {
     type: ?Schedule = null,
     scheduled_time: ?u32 = null,
 
+    /// Corresponds to file_id of scheduled workout / course.
+    pub fn getManufacturer(msg: ScheduleMessage) ?Manufacturer {
+        return msg.manufacturer;
+    }
+
+    /// Corresponds to file_id of scheduled workout / course.
+    pub fn getSerialNumber(msg: ScheduleMessage) ?u32 {
+        return msg.serial_number;
+    }
+
+    /// Corresponds to file_id of scheduled workout / course.
+    pub fn getTimeCreated(msg: ScheduleMessage) ?u32 {
+        return msg.time_created;
+    }
+
+    /// TRUE if this activity has been started
+    pub fn getCompleted(msg: ScheduleMessage) ?bool {
+        return msg.completed;
+    }
+
+    pub fn getType(msg: ScheduleMessage) ?Schedule {
+        return msg.type;
+    }
+
+    pub fn getScheduledTime(msg: ScheduleMessage) ?u32 {
+        return msg.scheduled_time;
+    }
+
     pub fn fromRawFields(msg: *ScheduleMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13459,6 +18225,48 @@ pub const TotalsMessage = struct {
     sessions: ?u16 = null,
     active_time: ?u32 = null,
     sport_index: ?u8 = null,
+
+    pub fn getMessageIndex(msg: TotalsMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: TotalsMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Excludes pauses
+    pub fn getTimerTime(msg: TotalsMessage) ?u32 {
+        return msg.timer_time;
+    }
+
+    pub fn getDistance(msg: TotalsMessage) ?u32 {
+        return msg.distance;
+    }
+
+    pub fn getCalories(msg: TotalsMessage) ?u32 {
+        return msg.calories;
+    }
+
+    pub fn getSport(msg: TotalsMessage) ?Sport {
+        return msg.sport;
+    }
+
+    /// Includes pauses
+    pub fn getElapsedTime(msg: TotalsMessage) ?u32 {
+        return msg.elapsed_time;
+    }
+
+    pub fn getSessions(msg: TotalsMessage) ?u16 {
+        return msg.sessions;
+    }
+
+    pub fn getActiveTime(msg: TotalsMessage) ?u32 {
+        return msg.active_time;
+    }
+
+    pub fn getSportIndex(msg: TotalsMessage) ?u8 {
+        return msg.sport_index;
+    }
 
     pub fn fromRawFields(msg: *TotalsMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -13527,6 +18335,64 @@ pub const WeightScaleMessage = struct {
     /// Associates this weight scale message to a user. This corresponds to the index of the user profile message in the weight scale file.
     user_profile_index: ?MessageIndex = null,
     bmi: ?f32 = null,
+
+    pub fn getTimestamp(msg: WeightScaleMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getWeight(msg: WeightScaleMessage) ?f32 {
+        return msg.weight;
+    }
+
+    pub fn getPercentFat(msg: WeightScaleMessage) ?f32 {
+        return msg.percent_fat;
+    }
+
+    pub fn getPercentHydration(msg: WeightScaleMessage) ?f32 {
+        return msg.percent_hydration;
+    }
+
+    pub fn getVisceralFatMass(msg: WeightScaleMessage) ?f32 {
+        return msg.visceral_fat_mass;
+    }
+
+    pub fn getBoneMass(msg: WeightScaleMessage) ?f32 {
+        return msg.bone_mass;
+    }
+
+    pub fn getMuscleMass(msg: WeightScaleMessage) ?f32 {
+        return msg.muscle_mass;
+    }
+
+    pub fn getBasalMet(msg: WeightScaleMessage) ?f32 {
+        return msg.basal_met;
+    }
+
+    pub fn getPhysiqueRating(msg: WeightScaleMessage) ?u8 {
+        return msg.physique_rating;
+    }
+
+    /// ~4kJ per kcal, 0.25 allows max 16384 kcal
+    pub fn getActiveMet(msg: WeightScaleMessage) ?f32 {
+        return msg.active_met;
+    }
+
+    pub fn getMetabolicAge(msg: WeightScaleMessage) ?u8 {
+        return msg.metabolic_age;
+    }
+
+    pub fn getVisceralFatRating(msg: WeightScaleMessage) ?u8 {
+        return msg.visceral_fat_rating;
+    }
+
+    /// Associates this weight scale message to a user. This corresponds to the index of the user profile message in the weight scale file.
+    pub fn getUserProfileIndex(msg: WeightScaleMessage) ?MessageIndex {
+        return msg.user_profile_index;
+    }
+
+    pub fn getBmi(msg: WeightScaleMessage) ?f32 {
+        return msg.bmi;
+    }
 
     pub fn fromRawFields(msg: *WeightScaleMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -13617,6 +18483,51 @@ pub const BloodPressureMessage = struct {
     /// Associates this blood pressure message to a user. This corresponds to the index of the user profile message in the blood pressure file.
     user_profile_index: ?MessageIndex = null,
 
+    pub fn getTimestamp(msg: BloodPressureMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSystolicPressure(msg: BloodPressureMessage) ?u16 {
+        return msg.systolic_pressure;
+    }
+
+    pub fn getDiastolicPressure(msg: BloodPressureMessage) ?u16 {
+        return msg.diastolic_pressure;
+    }
+
+    pub fn getMeanArterialPressure(msg: BloodPressureMessage) ?u16 {
+        return msg.mean_arterial_pressure;
+    }
+
+    pub fn getMap3SampleMean(msg: BloodPressureMessage) ?u16 {
+        return msg.map_3_sample_mean;
+    }
+
+    pub fn getMapMorningValues(msg: BloodPressureMessage) ?u16 {
+        return msg.map_morning_values;
+    }
+
+    pub fn getMapEveningValues(msg: BloodPressureMessage) ?u16 {
+        return msg.map_evening_values;
+    }
+
+    pub fn getHeartRate(msg: BloodPressureMessage) ?u8 {
+        return msg.heart_rate;
+    }
+
+    pub fn getHeartRateType(msg: BloodPressureMessage) ?HrType {
+        return msg.heart_rate_type;
+    }
+
+    pub fn getStatus(msg: BloodPressureMessage) ?BpStatus {
+        return msg.status;
+    }
+
+    /// Associates this blood pressure message to a user. This corresponds to the index of the user profile message in the blood pressure file.
+    pub fn getUserProfileIndex(msg: BloodPressureMessage) ?MessageIndex {
+        return msg.user_profile_index;
+    }
+
     pub fn fromRawFields(msg: *BloodPressureMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13681,6 +18592,33 @@ pub const MonitoringInfoMessage = struct {
     /// Indexed by activity_type
     cycles_to_calories: ?[]f32 = null,
     resting_metabolic_rate: ?u16 = null,
+
+    pub fn getTimestamp(msg: MonitoringInfoMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Use to convert activity timestamps to local time if device does not support time zone and daylight savings time correction.
+    pub fn getLocalTimestamp(msg: MonitoringInfoMessage) ?u32 {
+        return msg.local_timestamp;
+    }
+
+    pub fn getActivityType(msg: MonitoringInfoMessage) ?[]ActivityType {
+        return msg.activity_type;
+    }
+
+    /// Indexed by activity_type
+    pub fn getCyclesToDistance(msg: MonitoringInfoMessage) ?[]f32 {
+        return msg.cycles_to_distance;
+    }
+
+    /// Indexed by activity_type
+    pub fn getCyclesToCalories(msg: MonitoringInfoMessage) ?[]f32 {
+        return msg.cycles_to_calories;
+    }
+
+    pub fn getRestingMetabolicRate(msg: MonitoringInfoMessage) ?u16 {
+        return msg.resting_metabolic_rate;
+    }
 
     pub fn fromRawFields(msg: *MonitoringInfoMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -13778,6 +18716,128 @@ pub const MonitoringMessage = struct {
     descent: ?f32 = null,
     moderate_activity_minutes: ?u16 = null,
     vigorous_activity_minutes: ?u16 = null,
+
+    /// Must align to logging interval, for example, time must be 00:00:00 for daily log.
+    pub fn getTimestamp(msg: MonitoringMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Associates this data to device_info message. Not required for file with single device (sensor).
+    pub fn getDeviceIndex(msg: MonitoringMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
+
+    /// Accumulated total calories. Maintained by MonitoringReader for each activity_type. See SDK documentation
+    pub fn getCalories(msg: MonitoringMessage) ?u16 {
+        return msg.calories;
+    }
+
+    /// Accumulated distance. Maintained by MonitoringReader for each activity_type. See SDK documentation.
+    pub fn getDistance(msg: MonitoringMessage) ?f32 {
+        return msg.distance;
+    }
+
+    pub fn getActiveTime(msg: MonitoringMessage) ?f32 {
+        return msg.active_time;
+    }
+
+    pub fn getActivityType(msg: MonitoringMessage) ?ActivityType {
+        return msg.activity_type;
+    }
+
+    pub fn getActivitySubtype(msg: MonitoringMessage) ?ActivitySubtype {
+        return msg.activity_subtype;
+    }
+
+    pub fn getActivityLevel(msg: MonitoringMessage) ?ActivityLevel {
+        return msg.activity_level;
+    }
+
+    pub fn getDistance16(msg: MonitoringMessage) ?u16 {
+        return msg.distance_16;
+    }
+
+    pub fn getCycles16(msg: MonitoringMessage) ?u16 {
+        return msg.cycles_16;
+    }
+
+    pub fn getActiveTime16(msg: MonitoringMessage) ?u16 {
+        return msg.active_time_16;
+    }
+
+    /// Must align to logging interval, for example, time must be 00:00:00 for daily log.
+    pub fn getLocalTimestamp(msg: MonitoringMessage) ?u32 {
+        return msg.local_timestamp;
+    }
+
+    /// Avg temperature during the logging interval ended at timestamp
+    pub fn getTemperature(msg: MonitoringMessage) ?f32 {
+        return msg.temperature;
+    }
+
+    /// Min temperature during the logging interval ended at timestamp
+    pub fn getTemperatureMin(msg: MonitoringMessage) ?f32 {
+        return msg.temperature_min;
+    }
+
+    /// Max temperature during the logging interval ended at timestamp
+    pub fn getTemperatureMax(msg: MonitoringMessage) ?f32 {
+        return msg.temperature_max;
+    }
+
+    /// Indexed using minute_activity_level enum
+    pub fn getActivityTime(msg: MonitoringMessage) ?[]u16 {
+        return msg.activity_time;
+    }
+
+    pub fn getActiveCalories(msg: MonitoringMessage) ?u16 {
+        return msg.active_calories;
+    }
+
+    /// Indicates single type / intensity for duration since last monitoring message.
+    pub fn getCurrentActivityTypeIntensity(msg: MonitoringMessage) ?u8 {
+        return msg.current_activity_type_intensity;
+    }
+
+    pub fn getTimestampMin8(msg: MonitoringMessage) ?u8 {
+        return msg.timestamp_min_8;
+    }
+
+    pub fn getTimestamp16(msg: MonitoringMessage) ?u16 {
+        return msg.timestamp_16;
+    }
+
+    pub fn getHeartRate(msg: MonitoringMessage) ?u8 {
+        return msg.heart_rate;
+    }
+
+    pub fn getIntensity(msg: MonitoringMessage) ?f32 {
+        return msg.intensity;
+    }
+
+    pub fn getDurationMin(msg: MonitoringMessage) ?u16 {
+        return msg.duration_min;
+    }
+
+    pub fn getDuration(msg: MonitoringMessage) ?u32 {
+        return msg.duration;
+    }
+
+    pub fn getAscent(msg: MonitoringMessage) ?f32 {
+        return msg.ascent;
+    }
+
+    pub fn getDescent(msg: MonitoringMessage) ?f32 {
+        return msg.descent;
+    }
+
+    pub fn getModerateActivityMinutes(msg: MonitoringMessage) ?u16 {
+        return msg.moderate_activity_minutes;
+    }
+
+    pub fn getVigorousActivityMinutes(msg: MonitoringMessage) ?u16 {
+        return msg.vigorous_activity_minutes;
+    }
 
     pub fn fromRawFields(msg: *MonitoringMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -13926,6 +18986,21 @@ pub const MonitoringHrDataMessage = struct {
     /// RHR for today only. (Feeds into 7-day average)
     current_day_resting_heart_rate: ?u8 = null,
 
+    /// Must align to logging interval, for example, time must be 00:00:00 for daily log.
+    pub fn getTimestamp(msg: MonitoringHrDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// 7-day rolling average
+    pub fn getRestingHeartRate(msg: MonitoringHrDataMessage) ?u8 {
+        return msg.resting_heart_rate;
+    }
+
+    /// RHR for today only. (Feeds into 7-day average)
+    pub fn getCurrentDayRestingHeartRate(msg: MonitoringHrDataMessage) ?u8 {
+        return msg.current_day_resting_heart_rate;
+    }
+
     pub fn fromRawFields(msg: *MonitoringHrDataMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -13954,6 +19029,23 @@ pub const Spo2DataMessage = struct {
     reading_confidence: ?f32 = null,
     /// Mode when data was captured
     mode: ?Spo2MeasurementType = null,
+
+    pub fn getTimestamp(msg: Spo2DataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getReadingSpo2(msg: Spo2DataMessage) ?f32 {
+        return msg.reading_spo2;
+    }
+
+    pub fn getReadingConfidence(msg: Spo2DataMessage) ?f32 {
+        return msg.reading_confidence;
+    }
+
+    /// Mode when data was captured
+    pub fn getMode(msg: Spo2DataMessage) ?Spo2MeasurementType {
+        return msg.mode;
+    }
 
     pub fn fromRawFields(msg: *Spo2DataMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -13990,6 +19082,30 @@ pub const HrMessage = struct {
     filtered_bpm: ?[]u8 = null,
     event_timestamp: ?[]f32 = null,
     event_timestamp_12: ?[]u8 = null,
+
+    pub fn getTimestamp(msg: HrMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getFractionalTimestamp(msg: HrMessage) ?f32 {
+        return msg.fractional_timestamp;
+    }
+
+    pub fn getTime256(msg: HrMessage) ?f32 {
+        return msg.time256;
+    }
+
+    pub fn getFilteredBpm(msg: HrMessage) ?[]u8 {
+        return msg.filtered_bpm;
+    }
+
+    pub fn getEventTimestamp(msg: HrMessage) ?[]f32 {
+        return msg.event_timestamp;
+    }
+
+    pub fn getEventTimestamp12(msg: HrMessage) ?[]u8 {
+        return msg.event_timestamp_12;
+    }
 
     pub fn fromRawFields(msg: *HrMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14055,6 +19171,15 @@ pub const StressLevelMessage = struct {
     /// Time stress score was calculated
     stress_level_time: ?u32 = null,
 
+    pub fn getStressLevelValue(msg: StressLevelMessage) ?i16 {
+        return msg.stress_level_value;
+    }
+
+    /// Time stress score was calculated
+    pub fn getStressLevelTime(msg: StressLevelMessage) ?u32 {
+        return msg.stress_level_time;
+    }
+
     pub fn fromRawFields(msg: *StressLevelMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14086,6 +19211,42 @@ pub const MaxMetDataMessage = struct {
     hr_source: ?MaxMetHeartRateSource = null,
     /// Indidcates if the estimate was obtained using onboard GPS or connected GPS
     speed_source: ?MaxMetSpeedSource = null,
+
+    /// Time maxMET and vo2 were calculated
+    pub fn getUpdateTime(msg: MaxMetDataMessage) ?u32 {
+        return msg.update_time;
+    }
+
+    pub fn getVo2Max(msg: MaxMetDataMessage) ?f32 {
+        return msg.vo2_max;
+    }
+
+    pub fn getSport(msg: MaxMetDataMessage) ?Sport {
+        return msg.sport;
+    }
+
+    pub fn getSubSport(msg: MaxMetDataMessage) ?SubSport {
+        return msg.sub_sport;
+    }
+
+    pub fn getMaxMetCategory(msg: MaxMetDataMessage) ?MaxMetCategory {
+        return msg.max_met_category;
+    }
+
+    /// Indicates if calibrated data was used in the calculation
+    pub fn getCalibratedData(msg: MaxMetDataMessage) ?bool {
+        return msg.calibrated_data;
+    }
+
+    /// Indicates if the estimate was obtained using a chest strap or wrist heart rate
+    pub fn getHrSource(msg: MaxMetDataMessage) ?MaxMetHeartRateSource {
+        return msg.hr_source;
+    }
+
+    /// Indidcates if the estimate was obtained using onboard GPS or connected GPS
+    pub fn getSpeedSource(msg: MaxMetDataMessage) ?MaxMetSpeedSource {
+        return msg.speed_source;
+    }
 
     pub fn fromRawFields(msg: *MaxMetDataMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -14137,6 +19298,30 @@ pub const HsaBodyBatteryDataMessage = struct {
     charged: ?[]i16 = null,
     /// Body battery uncharged value
     uncharged: ?[]i16 = null,
+
+    pub fn getTimestamp(msg: HsaBodyBatteryDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaBodyBatteryDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Body battery level: [0,100] Blank: -16
+    pub fn getLevel(msg: HsaBodyBatteryDataMessage) ?[]i8 {
+        return msg.level;
+    }
+
+    /// Body battery charged value
+    pub fn getCharged(msg: HsaBodyBatteryDataMessage) ?[]i16 {
+        return msg.charged;
+    }
+
+    /// Body battery uncharged value
+    pub fn getUncharged(msg: HsaBodyBatteryDataMessage) ?[]i16 {
+        return msg.uncharged;
+    }
 
     pub fn fromRawFields(msg: *HsaBodyBatteryDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14195,6 +19380,15 @@ pub const HsaEventMessage = struct {
     /// Event ID. Health SDK use only
     event_id: ?u8 = null,
 
+    pub fn getTimestamp(msg: HsaEventMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Event ID. Health SDK use only
+    pub fn getEventId(msg: HsaEventMessage) ?u8 {
+        return msg.event_id;
+    }
+
     pub fn fromRawFields(msg: *HsaEventMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14228,6 +19422,40 @@ pub const HsaAccelerometerDataMessage = struct {
     accel_z: ?[]f32 = null,
     /// 32 kHz timestamp
     timestamp_32k: ?u32 = null,
+
+    pub fn getTimestamp(msg: HsaAccelerometerDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond resolution of the timestamp
+    pub fn getTimestampMs(msg: HsaAccelerometerDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Sampling Interval in Milliseconds
+    pub fn getSamplingInterval(msg: HsaAccelerometerDataMessage) ?u16 {
+        return msg.sampling_interval;
+    }
+
+    /// X-Axis Measurement
+    pub fn getAccelX(msg: HsaAccelerometerDataMessage) ?[]f32 {
+        return msg.accel_x;
+    }
+
+    /// Y-Axis Measurement
+    pub fn getAccelY(msg: HsaAccelerometerDataMessage) ?[]f32 {
+        return msg.accel_y;
+    }
+
+    /// Z-Axis Measurement
+    pub fn getAccelZ(msg: HsaAccelerometerDataMessage) ?[]f32 {
+        return msg.accel_z;
+    }
+
+    /// 32 kHz timestamp
+    pub fn getTimestamp32k(msg: HsaAccelerometerDataMessage) ?u32 {
+        return msg.timestamp_32k;
+    }
 
     pub fn fromRawFields(msg: *HsaAccelerometerDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14306,6 +19534,40 @@ pub const HsaGyroscopeDataMessage = struct {
     /// 32 kHz timestamp
     timestamp_32k: ?u32 = null,
 
+    pub fn getTimestamp(msg: HsaGyroscopeDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond resolution of the timestamp
+    pub fn getTimestampMs(msg: HsaGyroscopeDataMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Sampling Interval in 32 kHz timescale
+    pub fn getSamplingInterval(msg: HsaGyroscopeDataMessage) ?u16 {
+        return msg.sampling_interval;
+    }
+
+    /// X-Axis Measurement
+    pub fn getGyroX(msg: HsaGyroscopeDataMessage) ?[]f32 {
+        return msg.gyro_x;
+    }
+
+    /// Y-Axis Measurement
+    pub fn getGyroY(msg: HsaGyroscopeDataMessage) ?[]f32 {
+        return msg.gyro_y;
+    }
+
+    /// Z-Axis Measurement
+    pub fn getGyroZ(msg: HsaGyroscopeDataMessage) ?[]f32 {
+        return msg.gyro_z;
+    }
+
+    /// 32 kHz timestamp
+    pub fn getTimestamp32k(msg: HsaGyroscopeDataMessage) ?u32 {
+        return msg.timestamp_32k;
+    }
+
     pub fn fromRawFields(msg: *HsaGyroscopeDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14376,6 +19638,20 @@ pub const HsaStepDataMessage = struct {
     /// Total step sum
     steps: ?[]f32 = null,
 
+    pub fn getTimestamp(msg: HsaStepDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds. File start: 0xFFFFFFEF File stop: 0xFFFFFFEE
+    pub fn getProcessingInterval(msg: HsaStepDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Total step sum
+    pub fn getSteps(msg: HsaStepDataMessage) ?[]f32 {
+        return msg.steps;
+    }
+
     pub fn fromRawFields(msg: *HsaStepDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14417,6 +19693,25 @@ pub const HsaSpo2DataMessage = struct {
     reading_spo2: ?[]u8 = null,
     /// SpO2 Confidence: [0,254]
     confidence: ?[]u8 = null,
+
+    pub fn getTimestamp(msg: HsaSpo2DataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaSpo2DataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// SpO2 Reading: [70,100] Blank: 240
+    pub fn getReadingSpo2(msg: HsaSpo2DataMessage) ?[]u8 {
+        return msg.reading_spo2;
+    }
+
+    /// SpO2 Confidence: [0,254]
+    pub fn getConfidence(msg: HsaSpo2DataMessage) ?[]u8 {
+        return msg.confidence;
+    }
 
     pub fn fromRawFields(msg: *HsaSpo2DataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14467,6 +19762,20 @@ pub const HsaStressDataMessage = struct {
     /// Stress Level: [0,100] Off wrist: -1 Excess motion: -2 Not enough data: -3 Recovering from exercise: -4 Unidentified: -5 Blank: -16
     stress_level: ?[]f32 = null,
 
+    pub fn getTimestamp(msg: HsaStressDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaStressDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Stress Level: [0,100] Off wrist: -1 Excess motion: -2 Not enough data: -3 Recovering from exercise: -4 Unidentified: -5 Blank: -16
+    pub fn getStressLevel(msg: HsaStressDataMessage) ?[]f32 {
+        return msg.stress_level;
+    }
+
     pub fn fromRawFields(msg: *HsaStressDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14506,6 +19815,20 @@ pub const HsaRespirationDataMessage = struct {
     processing_interval: ?u16 = null,
     /// Breaths / min: [1,100] Invalid: 255 Excess motion: 254 Off wrist: 253 Not available: 252 Blank: 2.4
     respiration_rate: ?[]f32 = null,
+
+    pub fn getTimestamp(msg: HsaRespirationDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaRespirationDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Breaths / min: [1,100] Invalid: 255 Excess motion: 254 Off wrist: 253 Not available: 252 Blank: 2.4
+    pub fn getRespirationRate(msg: HsaRespirationDataMessage) ?[]f32 {
+        return msg.respiration_rate;
+    }
 
     pub fn fromRawFields(msg: *HsaRespirationDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14548,6 +19871,25 @@ pub const HsaHeartRateDataMessage = struct {
     status: ?u8 = null,
     /// Beats / min. Blank: 0
     heart_rate: ?[]f32 = null,
+
+    pub fn getTimestamp(msg: HsaHeartRateDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaHeartRateDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Status of measurements in buffer - 0 indicates SEARCHING 1 indicates LOCKED
+    pub fn getStatus(msg: HsaHeartRateDataMessage) ?u8 {
+        return msg.status;
+    }
+
+    /// Beats / min. Blank: 0
+    pub fn getHeartRate(msg: HsaHeartRateDataMessage) ?[]f32 {
+        return msg.heart_rate;
+    }
 
     pub fn fromRawFields(msg: *HsaHeartRateDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14594,6 +19936,21 @@ pub const HsaConfigurationDataMessage = struct {
     /// Size in bytes of data field
     data_size: ?u8 = null,
 
+    /// Encoded configuration data
+    pub fn getTimestamp(msg: HsaConfigurationDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Encoded configuration data. Health SDK use only
+    pub fn getData(msg: HsaConfigurationDataMessage) ?[]u8 {
+        return msg.data;
+    }
+
+    /// Size in bytes of data field
+    pub fn getDataSize(msg: HsaConfigurationDataMessage) ?u8 {
+        return msg.data_size;
+    }
+
     pub fn fromRawFields(msg: *HsaConfigurationDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14632,6 +19989,20 @@ pub const HsaWristTemperatureDataMessage = struct {
     processing_interval: ?u16 = null,
     /// Wrist temperature reading
     value: ?[]f32 = null,
+
+    pub fn getTimestamp(msg: HsaWristTemperatureDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Processing interval length in seconds
+    pub fn getProcessingInterval(msg: HsaWristTemperatureDataMessage) ?u16 {
+        return msg.processing_interval;
+    }
+
+    /// Wrist temperature reading
+    pub fn getValue(msg: HsaWristTemperatureDataMessage) ?[]f32 {
+        return msg.value;
+    }
 
     pub fn fromRawFields(msg: *HsaWristTemperatureDataMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14678,6 +20049,36 @@ pub const MemoGlobMessage = struct {
     field_num: ?u8 = null,
     /// Block of utf8 bytes. Note, mutltibyte characters may be split across adjoining memo_glob messages.
     data: ?[]u8 = null,
+
+    /// Sequence number of memo blocks
+    pub fn getPartIndex(msg: MemoGlobMessage) ?u32 {
+        return msg.part_index;
+    }
+
+    /// Deprecated. Use data field.
+    pub fn getMemo(msg: MemoGlobMessage) ?[]u8 {
+        return msg.memo;
+    }
+
+    /// Message Number of the parent message
+    pub fn getMesgNum(msg: MemoGlobMessage) ?MesgNum {
+        return msg.mesg_num;
+    }
+
+    /// Index of mesg that this glob is associated with.
+    pub fn getParentIndex(msg: MemoGlobMessage) ?MessageIndex {
+        return msg.parent_index;
+    }
+
+    /// Field within the parent that this glob is associated with
+    pub fn getFieldNum(msg: MemoGlobMessage) ?u8 {
+        return msg.field_num;
+    }
+
+    /// Block of utf8 bytes. Note, mutltibyte characters may be split across adjoining memo_glob messages.
+    pub fn getData(msg: MemoGlobMessage) ?[]u8 {
+        return msg.data;
+    }
 
     pub fn fromRawFields(msg: *MemoGlobMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14732,6 +20133,14 @@ pub const SleepLevelMessage = struct {
     timestamp: ?u32 = null,
     sleep_level: ?SleepLevel = null,
 
+    pub fn getTimestamp(msg: SleepLevelMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSleepLevel(msg: SleepLevelMessage) ?SleepLevel {
+        return msg.sleep_level;
+    }
+
     pub fn fromRawFields(msg: *SleepLevelMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14756,6 +20165,26 @@ pub const AntChannelIdMessage = struct {
     device_number: ?u16 = null,
     transmission_type: ?u8 = null,
     device_index: ?DeviceIndex = null,
+
+    pub fn getChannelNumber(msg: AntChannelIdMessage) ?u8 {
+        return msg.channel_number;
+    }
+
+    pub fn getDeviceType(msg: AntChannelIdMessage) ?u8 {
+        return msg.device_type;
+    }
+
+    pub fn getDeviceNumber(msg: AntChannelIdMessage) ?u16 {
+        return msg.device_number;
+    }
+
+    pub fn getTransmissionType(msg: AntChannelIdMessage) ?u8 {
+        return msg.transmission_type;
+    }
+
+    pub fn getDeviceIndex(msg: AntChannelIdMessage) ?DeviceIndex {
+        return msg.device_index;
+    }
 
     pub fn fromRawFields(msg: *AntChannelIdMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -14794,6 +20223,30 @@ pub const AntRxMessage = struct {
     mesg_data: ?[]u8 = null,
     channel_number: ?u8 = null,
     data: ?[]u8 = null,
+
+    pub fn getTimestamp(msg: AntRxMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getFractionalTimestamp(msg: AntRxMessage) ?f32 {
+        return msg.fractional_timestamp;
+    }
+
+    pub fn getMesgId(msg: AntRxMessage) ?u8 {
+        return msg.mesg_id;
+    }
+
+    pub fn getMesgData(msg: AntRxMessage) ?[]u8 {
+        return msg.mesg_data;
+    }
+
+    pub fn getChannelNumber(msg: AntRxMessage) ?u8 {
+        return msg.channel_number;
+    }
+
+    pub fn getData(msg: AntRxMessage) ?[]u8 {
+        return msg.data;
+    }
 
     pub fn fromRawFields(msg: *AntRxMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14853,6 +20306,30 @@ pub const AntTxMessage = struct {
     channel_number: ?u8 = null,
     data: ?[]u8 = null,
 
+    pub fn getTimestamp(msg: AntTxMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getFractionalTimestamp(msg: AntTxMessage) ?f32 {
+        return msg.fractional_timestamp;
+    }
+
+    pub fn getMesgId(msg: AntTxMessage) ?u8 {
+        return msg.mesg_id;
+    }
+
+    pub fn getMesgData(msg: AntTxMessage) ?[]u8 {
+        return msg.mesg_data;
+    }
+
+    pub fn getChannelNumber(msg: AntTxMessage) ?u8 {
+        return msg.channel_number;
+    }
+
+    pub fn getData(msg: AntTxMessage) ?[]u8 {
+        return msg.data;
+    }
+
     pub fn fromRawFields(msg: *AntTxMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14910,6 +20387,23 @@ pub const ExdScreenConfigurationMessage = struct {
     layout: ?ExdLayout = null,
     screen_enabled: ?bool = null,
 
+    pub fn getScreenIndex(msg: ExdScreenConfigurationMessage) ?u8 {
+        return msg.screen_index;
+    }
+
+    /// number of fields in screen
+    pub fn getFieldCount(msg: ExdScreenConfigurationMessage) ?u8 {
+        return msg.field_count;
+    }
+
+    pub fn getLayout(msg: ExdScreenConfigurationMessage) ?ExdLayout {
+        return msg.layout;
+    }
+
+    pub fn getScreenEnabled(msg: ExdScreenConfigurationMessage) ?bool {
+        return msg.screen_enabled;
+    }
+
     pub fn fromRawFields(msg: *ExdScreenConfigurationMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -14939,6 +20433,30 @@ pub const ExdDataFieldConfigurationMessage = struct {
     concept_count: ?u8 = null,
     display_type: ?ExdDisplayType = null,
     title: ?[:0]u8 = null,
+
+    pub fn getScreenIndex(msg: ExdDataFieldConfigurationMessage) ?u8 {
+        return msg.screen_index;
+    }
+
+    pub fn getConceptField(msg: ExdDataFieldConfigurationMessage) ?u8 {
+        return msg.concept_field;
+    }
+
+    pub fn getFieldId(msg: ExdDataFieldConfigurationMessage) ?u8 {
+        return msg.field_id;
+    }
+
+    pub fn getConceptCount(msg: ExdDataFieldConfigurationMessage) ?u8 {
+        return msg.concept_count;
+    }
+
+    pub fn getDisplayType(msg: ExdDataFieldConfigurationMessage) ?ExdDisplayType {
+        return msg.display_type;
+    }
+
+    pub fn getTitle(msg: ExdDataFieldConfigurationMessage) ?[:0]u8 {
+        return msg.title;
+    }
 
     pub fn fromRawFields(msg: *ExdDataFieldConfigurationMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -14995,6 +20513,50 @@ pub const ExdDataConceptConfigurationMessage = struct {
     qualifier: ?ExdQualifiers = null,
     descriptor: ?ExdDescriptors = null,
     is_signed: ?bool = null,
+
+    pub fn getScreenIndex(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.screen_index;
+    }
+
+    pub fn getConceptField(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.concept_field;
+    }
+
+    pub fn getFieldId(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.field_id;
+    }
+
+    pub fn getConceptIndex(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.concept_index;
+    }
+
+    pub fn getDataPage(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.data_page;
+    }
+
+    pub fn getConceptKey(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.concept_key;
+    }
+
+    pub fn getScaling(msg: ExdDataConceptConfigurationMessage) ?u8 {
+        return msg.scaling;
+    }
+
+    pub fn getDataUnits(msg: ExdDataConceptConfigurationMessage) ?ExdDataUnits {
+        return msg.data_units;
+    }
+
+    pub fn getQualifier(msg: ExdDataConceptConfigurationMessage) ?ExdQualifiers {
+        return msg.qualifier;
+    }
+
+    pub fn getDescriptor(msg: ExdDataConceptConfigurationMessage) ?ExdDescriptors {
+        return msg.descriptor;
+    }
+
+    pub fn getIsSigned(msg: ExdDataConceptConfigurationMessage) ?bool {
+        return msg.is_signed;
+    }
 
     pub fn fromRawFields(msg: *ExdDataConceptConfigurationMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15083,6 +20645,111 @@ pub const DiveSummaryMessage = struct {
     max_descent_rate: ?f32 = null,
     /// Time spent neither ascending nor descending
     hang_time: ?f32 = null,
+
+    pub fn getTimestamp(msg: DiveSummaryMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getReferenceMesg(msg: DiveSummaryMessage) ?MesgNum {
+        return msg.reference_mesg;
+    }
+
+    pub fn getReferenceIndex(msg: DiveSummaryMessage) ?MessageIndex {
+        return msg.reference_index;
+    }
+
+    /// 0 if above water
+    pub fn getAvgDepth(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_depth;
+    }
+
+    /// 0 if above water
+    pub fn getMaxDepth(msg: DiveSummaryMessage) ?f32 {
+        return msg.max_depth;
+    }
+
+    /// Time since end of last dive
+    pub fn getSurfaceInterval(msg: DiveSummaryMessage) ?f32 {
+        return msg.surface_interval;
+    }
+
+    pub fn getStartCns(msg: DiveSummaryMessage) ?f32 {
+        return msg.start_cns;
+    }
+
+    pub fn getEndCns(msg: DiveSummaryMessage) ?f32 {
+        return msg.end_cns;
+    }
+
+    pub fn getStartN2(msg: DiveSummaryMessage) ?f32 {
+        return msg.start_n2;
+    }
+
+    pub fn getEndN2(msg: DiveSummaryMessage) ?f32 {
+        return msg.end_n2;
+    }
+
+    pub fn getO2Toxicity(msg: DiveSummaryMessage) ?u16 {
+        return msg.o2_toxicity;
+    }
+
+    pub fn getDiveNumber(msg: DiveSummaryMessage) ?u32 {
+        return msg.dive_number;
+    }
+
+    pub fn getBottomTime(msg: DiveSummaryMessage) ?f32 {
+        return msg.bottom_time;
+    }
+
+    /// Average pressure-based surface air consumption
+    pub fn getAvgPressureSac(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_pressure_sac;
+    }
+
+    /// Average volumetric surface air consumption
+    pub fn getAvgVolumeSac(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_volume_sac;
+    }
+
+    /// Average respiratory minute volume
+    pub fn getAvgRmv(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_rmv;
+    }
+
+    /// Time to reach deepest level stop
+    pub fn getDescentTime(msg: DiveSummaryMessage) ?f32 {
+        return msg.descent_time;
+    }
+
+    /// Time after leaving bottom until reaching surface
+    pub fn getAscentTime(msg: DiveSummaryMessage) ?f32 {
+        return msg.ascent_time;
+    }
+
+    /// Average ascent rate, not including descents or stops
+    pub fn getAvgAscentRate(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_ascent_rate;
+    }
+
+    /// Average descent rate, not including ascents or stops
+    pub fn getAvgDescentRate(msg: DiveSummaryMessage) ?f32 {
+        return msg.avg_descent_rate;
+    }
+
+    /// Maximum ascent rate
+    pub fn getMaxAscentRate(msg: DiveSummaryMessage) ?f32 {
+        return msg.max_ascent_rate;
+    }
+
+    /// Maximum descent rate
+    pub fn getMaxDescentRate(msg: DiveSummaryMessage) ?f32 {
+        return msg.max_descent_rate;
+    }
+
+    /// Time spent neither ascending nor descending
+    pub fn getHangTime(msg: DiveSummaryMessage) ?f32 {
+        return msg.hang_time;
+    }
 
     pub fn fromRawFields(msg: *DiveSummaryMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15218,6 +20885,35 @@ pub const AadAccelFeaturesMessage = struct {
     /// Total accelerometer time above threshold in the interval
     time_above_threshold: ?f32 = null,
 
+    pub fn getTimestamp(msg: AadAccelFeaturesMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Time interval length in seconds
+    pub fn getTime(msg: AadAccelFeaturesMessage) ?u16 {
+        return msg.time;
+    }
+
+    /// Total accelerometer energy in the interval
+    pub fn getEnergyTotal(msg: AadAccelFeaturesMessage) ?u32 {
+        return msg.energy_total;
+    }
+
+    /// Count of zero crossings
+    pub fn getZeroCrossCnt(msg: AadAccelFeaturesMessage) ?u16 {
+        return msg.zero_cross_cnt;
+    }
+
+    /// Instance ID of zero crossing algorithm
+    pub fn getInstance(msg: AadAccelFeaturesMessage) ?u8 {
+        return msg.instance;
+    }
+
+    /// Total accelerometer time above threshold in the interval
+    pub fn getTimeAboveThreshold(msg: AadAccelFeaturesMessage) ?f32 {
+        return msg.time_above_threshold;
+    }
+
     pub fn fromRawFields(msg: *AadAccelFeaturesMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15258,6 +20954,11 @@ pub const HrvMessage = struct {
     /// Time between beats
     time: ?[]f32 = null,
 
+    /// Time between beats
+    pub fn getTime(msg: HrvMessage) ?[]f32 {
+        return msg.time;
+    }
+
     pub fn fromRawFields(msg: *HrvMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15289,6 +20990,20 @@ pub const BeatIntervalsMessage = struct {
     timestamp_ms: ?u16 = null,
     /// Array of millisecond times between beats
     time: ?[]u16 = null,
+
+    pub fn getTimestamp(msg: BeatIntervalsMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Milliseconds past date_time
+    pub fn getTimestampMs(msg: BeatIntervalsMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// Array of millisecond times between beats
+    pub fn getTime(msg: BeatIntervalsMessage) ?[]u16 {
+        return msg.time;
+    }
 
     pub fn fromRawFields(msg: *BeatIntervalsMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -15336,6 +21051,44 @@ pub const HrvStatusSummaryMessage = struct {
     /// 3 week baseline, upper boundary of balanced HRV status
     baseline_balanced_upper: ?f32 = null,
     status: ?HrvStatus = null,
+
+    pub fn getTimestamp(msg: HrvStatusSummaryMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// 7 day RMSSD average over sleep
+    pub fn getWeeklyAverage(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.weekly_average;
+    }
+
+    /// Last night RMSSD average over sleep
+    pub fn getLastNightAverage(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.last_night_average;
+    }
+
+    /// 5 minute high RMSSD value over sleep
+    pub fn getLastNight5MinHigh(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.last_night_5_min_high;
+    }
+
+    /// 3 week baseline, upper boundary of low HRV status
+    pub fn getBaselineLowUpper(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.baseline_low_upper;
+    }
+
+    /// 3 week baseline, lower boundary of balanced HRV status
+    pub fn getBaselineBalancedLower(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.baseline_balanced_lower;
+    }
+
+    /// 3 week baseline, upper boundary of balanced HRV status
+    pub fn getBaselineBalancedUpper(msg: HrvStatusSummaryMessage) ?f32 {
+        return msg.baseline_balanced_upper;
+    }
+
+    pub fn getStatus(msg: HrvStatusSummaryMessage) ?HrvStatus {
+        return msg.status;
+    }
 
     pub fn fromRawFields(msg: *HrvStatusSummaryMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15390,6 +21143,15 @@ pub const HrvValueMessage = struct {
     /// 5 minute RMSSD
     value: ?f32 = null,
 
+    pub fn getTimestamp(msg: HrvValueMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// 5 minute RMSSD
+    pub fn getValue(msg: HrvValueMessage) ?f32 {
+        return msg.value;
+    }
+
     pub fn fromRawFields(msg: *HrvValueMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15422,6 +21184,35 @@ pub const RawBbiMessage = struct {
     quality: ?[]u8 = null,
     /// 1 = gap (time represents ms gap length). 0 = BBI data
     gap: ?[]u8 = null,
+
+    pub fn getTimestamp(msg: RawBbiMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Millisecond resolution of the timestamp
+    pub fn getTimestampMs(msg: RawBbiMessage) ?u16 {
+        return msg.timestamp_ms;
+    }
+
+    /// 1 bit for gap indicator, 1 bit for quality indicator, and 14 bits for Beat-to-Beat interval values in whole-integer millisecond resolution
+    pub fn getData(msg: RawBbiMessage) ?[]u16 {
+        return msg.data;
+    }
+
+    /// Array of millisecond times between beats
+    pub fn getTime(msg: RawBbiMessage) ?[]u16 {
+        return msg.time;
+    }
+
+    /// 1 = high confidence. 0 = low confidence. N/A when gap = 1
+    pub fn getQuality(msg: RawBbiMessage) ?[]u8 {
+        return msg.quality;
+    }
+
+    /// 1 = gap (time represents ms gap length). 0 = BBI data
+    pub fn getGap(msg: RawBbiMessage) ?[]u8 {
+        return msg.gap;
+    }
 
     pub fn fromRawFields(msg: *RawBbiMessage, raw_fields: []const decoder.FieldData, allocator: std.mem.Allocator) !void {
         msg.* = .{};
@@ -15489,6 +21280,15 @@ pub const RespirationRateMessage = struct {
     /// Breaths * 100 /min, -300 indicates invalid, -200 indicates large motion, -100 indicates off wrist
     respiration_rate: ?f32 = null,
 
+    pub fn getTimestamp(msg: RespirationRateMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    /// Breaths * 100 /min, -300 indicates invalid, -200 indicates large motion, -100 indicates off wrist
+    pub fn getRespirationRate(msg: RespirationRateMessage) ?f32 {
+        return msg.respiration_rate;
+    }
+
     pub fn fromRawFields(msg: *RespirationRateMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15518,6 +21318,38 @@ pub const ChronoShotSessionMessage = struct {
     projectile_type: ?ProjectileType = null,
     grain_weight: ?f32 = null,
     standard_deviation: ?f32 = null,
+
+    pub fn getTimestamp(msg: ChronoShotSessionMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getMinSpeed(msg: ChronoShotSessionMessage) ?f32 {
+        return msg.min_speed;
+    }
+
+    pub fn getMaxSpeed(msg: ChronoShotSessionMessage) ?f32 {
+        return msg.max_speed;
+    }
+
+    pub fn getAvgSpeed(msg: ChronoShotSessionMessage) ?f32 {
+        return msg.avg_speed;
+    }
+
+    pub fn getShotCount(msg: ChronoShotSessionMessage) ?u16 {
+        return msg.shot_count;
+    }
+
+    pub fn getProjectileType(msg: ChronoShotSessionMessage) ?ProjectileType {
+        return msg.projectile_type;
+    }
+
+    pub fn getGrainWeight(msg: ChronoShotSessionMessage) ?f32 {
+        return msg.grain_weight;
+    }
+
+    pub fn getStandardDeviation(msg: ChronoShotSessionMessage) ?f32 {
+        return msg.standard_deviation;
+    }
 
     pub fn fromRawFields(msg: *ChronoShotSessionMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15572,6 +21404,18 @@ pub const ChronoShotDataMessage = struct {
     shot_speed: ?f32 = null,
     shot_num: ?u16 = null,
 
+    pub fn getTimestamp(msg: ChronoShotDataMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getShotSpeed(msg: ChronoShotDataMessage) ?f32 {
+        return msg.shot_speed;
+    }
+
+    pub fn getShotNum(msg: ChronoShotDataMessage) ?u16 {
+        return msg.shot_num;
+    }
+
     pub fn fromRawFields(msg: *ChronoShotDataMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15599,6 +21443,18 @@ pub const TankUpdateMessage = struct {
     timestamp: ?u32 = null,
     sensor: ?AntChannelId = null,
     pressure: ?f32 = null,
+
+    pub fn getTimestamp(msg: TankUpdateMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSensor(msg: TankUpdateMessage) ?AntChannelId {
+        return msg.sensor;
+    }
+
+    pub fn getPressure(msg: TankUpdateMessage) ?f32 {
+        return msg.pressure;
+    }
 
     pub fn fromRawFields(msg: *TankUpdateMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15629,6 +21485,26 @@ pub const TankSummaryMessage = struct {
     start_pressure: ?f32 = null,
     end_pressure: ?f32 = null,
     volume_used: ?f32 = null,
+
+    pub fn getTimestamp(msg: TankSummaryMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSensor(msg: TankSummaryMessage) ?AntChannelId {
+        return msg.sensor;
+    }
+
+    pub fn getStartPressure(msg: TankSummaryMessage) ?f32 {
+        return msg.start_pressure;
+    }
+
+    pub fn getEndPressure(msg: TankSummaryMessage) ?f32 {
+        return msg.end_pressure;
+    }
+
+    pub fn getVolumeUsed(msg: TankSummaryMessage) ?f32 {
+        return msg.volume_used;
+    }
 
     pub fn fromRawFields(msg: *TankSummaryMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15692,6 +21568,76 @@ pub const SleepAssessmentMessage = struct {
     interruptions_score: ?u8 = null,
     /// Excludes stress during awake periods in the sleep window
     average_stress_during_sleep: ?f32 = null,
+
+    /// Average of awake_time_score and awakenings_count_score. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getCombinedAwakeScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.combined_awake_score;
+    }
+
+    /// Score that evaluates the total time spent awake between sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getAwakeTimeScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.awake_time_score;
+    }
+
+    /// Score that evaluates the number of awakenings that interrupt sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getAwakeningsCountScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.awakenings_count_score;
+    }
+
+    /// Score that evaluates the amount of deep sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getDeepSleepScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.deep_sleep_score;
+    }
+
+    /// Score that evaluates the quality of sleep based on sleep stages, heart-rate variability and possible awakenings during the night. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getSleepDurationScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.sleep_duration_score;
+    }
+
+    /// Score that evaluates the amount of light sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getLightSleepScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.light_sleep_score;
+    }
+
+    /// Total score that summarizes the overall quality of sleep, combining sleep duration and quality. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getOverallSleepScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.overall_sleep_score;
+    }
+
+    /// Score that evaluates the quality of sleep based on sleep stages, heart-rate variability and possible awakenings during the night. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getSleepQualityScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.sleep_quality_score;
+    }
+
+    /// Score that evaluates stress and recovery during sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getSleepRecoveryScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.sleep_recovery_score;
+    }
+
+    /// Score that evaluates the amount of REM sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getRemSleepScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.rem_sleep_score;
+    }
+
+    /// Score that evaluates the amount of restlessness during sleep. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getSleepRestlessnessScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.sleep_restlessness_score;
+    }
+
+    /// The number of awakenings during sleep.
+    pub fn getAwakeningsCount(msg: SleepAssessmentMessage) ?u8 {
+        return msg.awakenings_count;
+    }
+
+    /// Score that evaluates the sleep interruptions. If valid: 0 (worst) to 100 (best). If unknown: FIT_UINT8_INVALID.
+    pub fn getInterruptionsScore(msg: SleepAssessmentMessage) ?u8 {
+        return msg.interruptions_score;
+    }
+
+    /// Excludes stress during awake periods in the sleep window
+    pub fn getAverageStressDuringSleep(msg: SleepAssessmentMessage) ?f32 {
+        return msg.average_stress_during_sleep;
+    }
 
     pub fn fromRawFields(msg: *SleepAssessmentMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15765,6 +21711,18 @@ pub const SleepDisruptionSeverityPeriodMessage = struct {
     timestamp: ?u32 = null,
     severity: ?SleepDisruptionSeverity = null,
 
+    pub fn getMessageIndex(msg: SleepDisruptionSeverityPeriodMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: SleepDisruptionSeverityPeriodMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSeverity(msg: SleepDisruptionSeverityPeriodMessage) ?SleepDisruptionSeverity {
+        return msg.severity;
+    }
+
     pub fn fromRawFields(msg: *SleepDisruptionSeverityPeriodMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
         for (raw_fields) |rf| {
@@ -15790,6 +21748,14 @@ pub const SleepDisruptionSeverityPeriodMessage = struct {
 pub const SleepDisruptionOvernightSeverityMessage = struct {
     timestamp: ?u32 = null,
     severity: ?SleepDisruptionSeverity = null,
+
+    pub fn getTimestamp(msg: SleepDisruptionOvernightSeverityMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getSeverity(msg: SleepDisruptionOvernightSeverityMessage) ?SleepDisruptionSeverity {
+        return msg.severity;
+    }
 
     pub fn fromRawFields(msg: *SleepDisruptionOvernightSeverityMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15821,6 +21787,47 @@ pub const NapEventMessage = struct {
     source: ?NapSource = null,
     /// The timestamp representing when this nap event was last updated
     update_timestamp: ?u32 = null,
+
+    pub fn getMessageIndex(msg: NapEventMessage) ?MessageIndex {
+        return msg.message_index;
+    }
+
+    pub fn getTimestamp(msg: NapEventMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getStartTime(msg: NapEventMessage) ?u32 {
+        return msg.start_time;
+    }
+
+    pub fn getStartTimezoneOffset(msg: NapEventMessage) ?i16 {
+        return msg.start_timezone_offset;
+    }
+
+    pub fn getEndTime(msg: NapEventMessage) ?u32 {
+        return msg.end_time;
+    }
+
+    pub fn getEndTimezoneOffset(msg: NapEventMessage) ?i16 {
+        return msg.end_timezone_offset;
+    }
+
+    pub fn getFeedback(msg: NapEventMessage) ?NapPeriodFeedback {
+        return msg.feedback;
+    }
+
+    pub fn getIsDeleted(msg: NapEventMessage) ?bool {
+        return msg.is_deleted;
+    }
+
+    pub fn getSource(msg: NapEventMessage) ?NapSource {
+        return msg.source;
+    }
+
+    /// The timestamp representing when this nap event was last updated
+    pub fn getUpdateTimestamp(msg: NapEventMessage) ?u32 {
+        return msg.update_timestamp;
+    }
 
     pub fn fromRawFields(msg: *NapEventMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};
@@ -15877,6 +21884,29 @@ pub const SkinTempOvernightMessage = struct {
     average_7_day_deviation: ?f32 = null,
     /// Final overnight temperature value
     nightly_value: ?f32 = null,
+
+    pub fn getTimestamp(msg: SkinTempOvernightMessage) ?u32 {
+        return msg.timestamp;
+    }
+
+    pub fn getLocalTimestamp(msg: SkinTempOvernightMessage) ?u32 {
+        return msg.local_timestamp;
+    }
+
+    /// The average overnight deviation from baseline temperature in degrees C
+    pub fn getAverageDeviation(msg: SkinTempOvernightMessage) ?f32 {
+        return msg.average_deviation;
+    }
+
+    /// The average 7 day overnight deviation from baseline temperature in degrees C
+    pub fn getAverage7DayDeviation(msg: SkinTempOvernightMessage) ?f32 {
+        return msg.average_7_day_deviation;
+    }
+
+    /// Final overnight temperature value
+    pub fn getNightlyValue(msg: SkinTempOvernightMessage) ?f32 {
+        return msg.nightly_value;
+    }
 
     pub fn fromRawFields(msg: *SkinTempOvernightMessage, raw_fields: []const decoder.FieldData) !void {
         msg.* = .{};

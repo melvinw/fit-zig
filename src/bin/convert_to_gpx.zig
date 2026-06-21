@@ -40,7 +40,7 @@ pub fn main(init: std.process.Init) !void {
             if (message.?.global_id == @intFromEnum(profile.MesgNum.file_id)) {
                 var file_id: profile.FileIdMessage = undefined;
                 try file_id.fromRawFields(message.?.fields, allocator);
-                file_type = file_id.type.?;
+                file_type = file_id.getType().?;
                 file_id.deinit(allocator);
                 continue;
             }
@@ -51,13 +51,13 @@ pub fn main(init: std.process.Init) !void {
             assert(message.?.global_id == @intFromEnum(profile.MesgNum.record));
             var record: profile.RecordMessage = undefined;
             try record.fromRawFields(message.?.fields, allocator);
-            const timestamp = try helpers.toIso8601(record.timestamp.?, allocator);
+            const timestamp = try helpers.toIso8601(record.getTimestamp().?, allocator);
             defer allocator.free(timestamp);
             try stdout.print("      <trkpt lat=\"{}\" lon=\"{}\">\n", .{
-                helpers.semis2deg(record.position_lat.?),
-                helpers.semis2deg(record.position_long.?),
+                helpers.semis2deg(record.getPositionLat().?),
+                helpers.semis2deg(record.getPositionLong().?),
             });
-            try stdout.print("        <ele>{}</ele>\n", .{record.altitude orelse record.enhanced_altitude.?});
+            try stdout.print("        <ele>{}</ele>\n", .{record.getAltitude() orelse record.getEnhancedAltitude().?});
             // Don't include time for course files.
             if (file_type == profile.File.activity) {
                 try stdout.print("        <time>{s}</time>\n", .{timestamp});
